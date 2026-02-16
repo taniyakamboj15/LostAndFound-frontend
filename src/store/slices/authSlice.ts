@@ -1,0 +1,150 @@
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { authService } from '../../services';
+import type { User, LoginCredentials, RegisterData, AuthResponse } from '../../types';
+import { STORAGE_KEYS } from '../../constants';
+
+// State interface
+interface AuthState {
+  user: User | null;
+  accessToken: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// Initial state
+const initialState: AuthState = {
+  user: JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null'),
+  accessToken: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
+  isAuthenticated: !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
+  isLoading: false,
+  error: null,
+};
+
+// Async thunks
+export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
+  'auth/login',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await authService.login(credentials);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Login failed');
+    }
+  }
+);
+
+export const registerUser = createAsyncThunk<AuthResponse, RegisterData>(
+  'auth/register',
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await authService.register(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Registration failed');
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk('auth/logout', async () => {
+  await authService.logout();
+});
+
+export const getProfile = createAsyncThunk('auth/profile', async () => {
+  const response = await authService.getProfile();
+  return response.data;
+});
+
+// Slice
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    setCredentials: (state, action: PayloadAction<{ user: User; accessToken: string }>) => {
+      state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
+      state.isAuthenticated = true;
+      
+      // Store in localStorage
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload.user));
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, action.payload.accessToken);
+    },
+    clearCredentials: (state) => {
+      state.user = null;
+      state.accessToken = null;
+      state.isAuthenticated = false;
+      
+      // Clear localStorage
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    // Login
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.data.user;
+        state.accessToken = action.payload.data.accessToken;
+        state.isAuthenticated = true;
+        
+        // Store tokens
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload.data.user));
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, action.payload.data.accessToken);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, action.payload.data.refreshToken);
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = (action.payload as string) || action.error.message || 'Login failed';
+      });
+
+    // Register
+    builder
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+        // Do not set user/token on register as email verification is required
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = (action.payload as string) || action.error.message || 'Registration failed';
+      });
+
+    // Logout
+    builder
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.accessToken = null;
+        state.isAuthenticated = false;
+        
+        // Clear localStorage
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      });
+
+    // Get Profile
+    builder
+      .addCase(getProfile.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.user = action.payload;
+          localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload));
+        }
+      });
+  },
+});
+
+export const { setCredentials, clearCredentials, clearError } = authSlice.actions;
+export default authSlice.reducer;
