@@ -16,11 +16,11 @@ export interface LostReport {
   locationLost: string;
   dateLost: string;
   reportedBy: ReportedBy;
-  submittedBy?: ReportedBy; // Legacy field or alias
+  submittedBy?: ReportedBy; 
   contactEmail: string;
   contactPhone?: string;
   identifyingFeatures: string[];
-  matches?: any[]; // For future strict typing
+  matches?: unknown[]; 
   matchCount?: number;
   createdAt: string;
   updatedAt: string;

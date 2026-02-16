@@ -4,11 +4,21 @@ import { Calendar, Clock, MapPin, User, Package } from 'lucide-react';
 import { Card, Button, Badge, Spinner } from '@components/ui';
 import { formatDate } from '@utils/formatters';
 import { usePickups } from '@hooks/usePickups';
-
-
+import ScanPickupModal from '@components/claims/ScanPickupModal';
+import { useAuth } from '@hooks/useAuth';
+import { usePickupVerification } from '@hooks/usePickupVerification';
 
 const PickupsList = () => {
   const { pickups, isLoading, error } = usePickups();
+  const {user } = useAuth();
+  
+
+  const {
+    isScanModalOpen,
+    openScanModal,
+    closeScanModal,
+    handleVerifySuccess
+  } = usePickupVerification();
 
   const getStatusBadge = useCallback((isCompleted: boolean) => {
     if (isCompleted) return { variant: 'success' as const, label: 'Completed' };
@@ -71,7 +81,20 @@ const PickupsList = () => {
           <h1 className="text-3xl font-bold text-gray-900">Pickup Schedule</h1>
           <p className="text-gray-600 mt-1">Manage item pickup appointments</p>
         </div>
+        {/* Verify Button - Explicit Role Check */}
+        {user && ['staff', 'admin'].includes(user.role) && (
+          <Button variant="primary" onClick={openScanModal}>
+            <Package className="h-4 w-4 mr-2" />
+            Verify Pickup
+          </Button>
+        )}
       </div>
+
+      <ScanPickupModal
+        isOpen={isScanModalOpen}
+        onClose={closeScanModal}
+        onVerifySuccess={handleVerifySuccess}
+      />
 
       {/* Calendar View Placeholder */}
       <Card>

@@ -59,6 +59,13 @@ export interface CreateUserData extends RegisterData {
 
 export interface UpdateUserData extends Partial<CreateUserData> {}
 
+export interface AddStaffData {
+  name: string;
+  email: string;
+  password: string;
+  role: Extract<UserRole, 'ADMIN' | 'STAFF'>;
+}
+
 export interface ChangePasswordData {
   currentPassword: string;
   newPassword: string;

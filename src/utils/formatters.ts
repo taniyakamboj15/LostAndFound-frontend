@@ -14,25 +14,25 @@ export const formatTime = (date: string | Date): string => {
   return format(new Date(date), 'p');
 };
 
-// Format date with time
+
 export const formatDateTime = (date: string | Date): string => {
   if (!date) return '';
   return format(new Date(date), DATE_FORMATS.DISPLAY_WITH_TIME);
 };
 
-// Format relative time (e.g., "2 hours ago")
+
 export const formatRelativeTime = (date: string | Date): string => {
   if (!date) return '';
   return formatDistance(new Date(date), new Date(), { addSuffix: true });
 };
 
-// Format relative date (e.g., "yesterday at 3:20 PM")
+
 export const formatRelativeDate = (date: string | Date): string => {
   if (!date) return '';
   return formatRelative(new Date(date), new Date());
 };
 
-// Format file size
+
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
   

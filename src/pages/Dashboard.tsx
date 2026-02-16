@@ -4,9 +4,9 @@ import { Package, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ROUTES } from '../constants/routes';
-import { API_BASE_URL } from '../constants/api';
 import { useDashboard } from '@hooks/useDashboard';
 import { ComponentErrorBoundary } from '@components/feedback';
+import { getItemImageUrl } from '@utils/image';
 
 const Dashboard = () => {
   const { user, isAdmin, isStaff, isLoading: authLoading } = useAuth();
@@ -134,6 +134,7 @@ const Dashboard = () => {
 
             <Card hover>
               <div className="flex items-center justify-between">
+                <Link to={ROUTES.LOST_REPORT}>  
                 <div>
                   <p className="text-sm font-medium text-gray-600">File a Report</p>
                   <p className="text-sm text-gray-500 mt-2">Submit a lost item report to find matches</p>
@@ -141,6 +142,7 @@ const Dashboard = () => {
                 <div className="p-3 bg-orange-100 rounded-lg">
                   <AlertCircle className="h-6 w-6 text-orange-600" />
                 </div>
+                </Link>
               </div>
             </Card>
           </div>
@@ -168,7 +170,7 @@ const Dashboard = () => {
                         <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden">
                           {item.photos && item.photos.length > 0 ? (
                             <img 
-                              src={item.photos[0].path.startsWith('http') ? item.photos[0].path : `${API_BASE_URL}/${item.photos[0].path}`} 
+                              src={getItemImageUrl(item.photos[0].path) || ''} 
                               alt={item.category} 
                               className="h-full w-full object-cover" 
                             />

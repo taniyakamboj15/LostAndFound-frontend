@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,6 +10,7 @@ import { useStorage } from '@hooks/useStorage';
 import { useToast } from '@hooks/useToast';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { cn } from '@utils/helpers';
+import { usePhotoUpload } from '@hooks/usePhotoUpload';
 
 interface CreateItemFormData {
   category: ItemCategory;
@@ -29,9 +29,6 @@ const CreateItem = () => {
   const toast = useToast();
   const { createItem, isSubmitting } = useCreateItem();
   const { locations } = useStorage();
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-
   const {
     register,
     handleSubmit,
@@ -42,58 +39,7 @@ const CreateItem = () => {
   });
 
   const isHighValue = watch('isHighValue');
-
-  // Debug errors
-  useEffect(() => {
-    if (Object.keys(errors).length > 0) {
-      console.log('Form validation errors:', errors);
-    }
-  }, [errors]);
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    // Validate file types and sizes
-    const validFiles = files.filter((file) => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image file`);
-        return false;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} is larger than 5MB`);
-        return false;
-      }
-      return true;
-    });
-
-    // Limit to 5 photos total
-    const remainingSlots = 5 - photos.length;
-    const filesToAdd = validFiles.slice(0, remainingSlots);
-
-    if (validFiles.length > remainingSlots) {
-      toast.error(`You can only upload up to 5 photos`);
-    }
-
-    // Create previews
-    const newPreviews: string[] = [];
-    filesToAdd.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPreviews.push(reader.result as string);
-        if (newPreviews.length === filesToAdd.length) {
-          setPhotoPreviews([...photoPreviews, ...newPreviews]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    setPhotos([...photos, ...filesToAdd]);
-  };
-
-  const removePhoto = (index: number) => {
-    setPhotos(photos.filter((_, i) => i !== index));
-    setPhotoPreviews(photoPreviews.filter((_, i) => i !== index));
-  };
+  const { photos, photoPreviews, handlePhotoChange, removePhoto } = usePhotoUpload();
 
   const onSubmit = async (data: CreateItemFormData) => {
     if (photos.length === 0) {

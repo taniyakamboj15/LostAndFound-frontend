@@ -3,18 +3,13 @@ import { useForm, Resolver } from 'react-hook-form';
 import { useLoaderData, useActionData, useSubmit, useNavigation } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Card, Button, Input, Select, Modal, Badge } from '@components/ui';
-import { Plus, Shield, User as UserIcon, Mail, ShieldCheck } from 'lucide-react';
+import { Plus, Shield, User as UserIcon, Mail, } from 'lucide-react';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { userSchema } from '@validators';
 import { UserRole } from '@constants/roles';
-import type { User } from '../types';
+import { User, AddStaffData } from '../types';
 
-type UserFormData = {
-  name: string;
-  email: string;
-  password: string;
-  role: Extract<UserRole, 'ADMIN' | 'STAFF'>;
-};
+import { ROLE_BADGE_CONFIG, STATUS_BADGE_CONFIG } from '@constants/ui';
 
 const AdminStaff = () => {
   const { users, error } = useLoaderData() as { users: User[]; error: string | null };
@@ -29,8 +24,8 @@ const AdminStaff = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<UserFormData>({
-    resolver: yupResolver(userSchema) as Resolver<UserFormData>,
+  } = useForm<AddStaffData>({
+    resolver: yupResolver(userSchema) as Resolver<AddStaffData>,
     defaultValues: {
       role: UserRole.STAFF,
     },
@@ -43,7 +38,7 @@ const AdminStaff = () => {
     }
   }, [actionData, reset]);
 
-  const onSubmit = (data: UserFormData) => {
+  const onSubmit = (data: AddStaffData) => {
     submit({ ...data, intent: 'add-staff' }, { method: 'post' });
   };
 
@@ -91,7 +86,12 @@ const AdminStaff = () => {
                       </td>
                     </tr>
                   ) : (
-                    users.map((u) => (
+                    users.map((u) => {
+                      const roleConfig = ROLE_BADGE_CONFIG[u.role as keyof typeof ROLE_BADGE_CONFIG] || ROLE_BADGE_CONFIG.STAFF;
+                      const statusConfig = STATUS_BADGE_CONFIG[String(u.isEmailVerified) as keyof typeof STATUS_BADGE_CONFIG];
+                      const RoleIcon = roleConfig.icon;
+
+                      return (
                       <tr key={u._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -110,21 +110,21 @@ const AdminStaff = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={u.role === 'ADMIN' ? 'success' : 'default'} className="flex items-center w-fit gap-1">
-                            <ShieldCheck className="w-3 h-3" />
+                          <Badge variant={roleConfig.variant as any} className="flex items-center w-fit gap-1">
+                            <RoleIcon className="w-3 h-3" />
                             {u.role}
                           </Badge>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={u.isEmailVerified ? 'success' : 'warning'}>
-                            {u.isEmailVerified ? 'Verified' : 'Pending'}
+                          <Badge variant={statusConfig.variant as any}>
+                            {statusConfig.label}
                           </Badge>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(u.createdAt).toLocaleDateString()}
                         </td>
                       </tr>
-                    ))
+                    )}) 
                   )}
                 </tbody>
               </table>

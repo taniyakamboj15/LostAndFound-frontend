@@ -41,8 +41,13 @@ const Login = () => {
 
       toast.success('Login successful!');
       navigate(ROUTES.DASHBOARD);
-    } catch (err: any) {
-      toast.error(err || 'Login failed. Please try again.');
+    } catch (err: unknown) {
+      let message = 'Login failed. Please try again.';
+      if (typeof err === 'string') message = err;
+      else if (err instanceof Error) message = err.message;
+      else if (typeof err === 'object' && err !== null && 'message' in err) message = String((err as {message: unknown}).message);
+      
+      toast.error(message);
     }
   };
 

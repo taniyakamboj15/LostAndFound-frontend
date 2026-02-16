@@ -5,8 +5,8 @@ import { Card, Input, Button, Badge, Spinner } from '@components/ui';
 import { ItemCategory, ITEM_CATEGORIES } from '@constants/categories';
 import { formatDate } from '@utils/formatters';
 import { usePublicSearch } from '@hooks/usePublicSearch';
-import { API_BASE_URL } from '../constants/api';
 import { ComponentErrorBoundary } from '@components/feedback';
+import { getItemImageUrl } from '@utils/image';
 
 const PublicSearch = () => {
   const { items, isLoading, error, filters, updateFilters, clearFilters, search } = usePublicSearch();
@@ -149,7 +149,7 @@ const PublicSearch = () => {
                  <div className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                     {item.photos && item.photos.length > 0 ? (
                        <img 
-                        src={item.photos[0].path.startsWith('http') ? item.photos[0].path : `${API_BASE_URL}/${item.photos[0].path}`} 
+                        src={getItemImageUrl(item.photos[0].path) || ''} 
                         alt={item.description} 
                         className="w-full h-full object-cover" 
                        />

@@ -1,17 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ItemCategory } from '@constants/categories';
+
 import { PublicItem, ApiResponse } from '../types';
 
-interface SearchFilters {
-  keyword: string;
-  category: ItemCategory | '';
-  location: string;
-  dateFrom: string;
-  dateTo: string;
-}
+import { PublicSearchFilters } from '../types/ui.types';
 
 export const usePublicSearch = () => {
-  const [filters, setFilters] = useState<SearchFilters>({
+  const [filters, setFilters] = useState<PublicSearchFilters>({
     keyword: '',
     category: '',
     location: '',
@@ -22,7 +16,7 @@ export const usePublicSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchItems = useCallback(async (currentFilters: SearchFilters = filters) => {
+  const fetchItems = useCallback(async (currentFilters: PublicSearchFilters = filters) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -50,14 +44,14 @@ export const usePublicSearch = () => {
     }
   }, [filters]);
 
-  const updateFilters = useCallback((newFilters: SearchFilters) => {
+  const updateFilters = useCallback((newFilters: PublicSearchFilters) => {
     setFilters(newFilters);
   }, []);
 
   const clearFilters = useCallback(() => {
-    const cleared = {
+    const cleared: PublicSearchFilters = {
       keyword: '',
-      category: '' as const,
+      category: '',
       location: '',
       dateFrom: '',
       dateTo: '',

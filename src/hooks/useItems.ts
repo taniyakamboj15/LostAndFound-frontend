@@ -4,7 +4,8 @@ import { itemService } from '@services/item.service';
 import { useToast } from './useToast';
 import { getErrorMessage } from '@utils/errors';
 import type { Item, ItemFilters as ServiceItemFilters, CreateItemData, UpdateItemData } from '../types/item.types';
-import type { ItemCategory } from '@constants/categories';
+
+import { AdminItemFilters } from '../types/ui.types';
 
 export const useItemDetail = (id: string | null) => {
   const [item, setItem] = useState<Item | null>(null);
@@ -40,24 +41,18 @@ export const useItemDetail = (id: string | null) => {
   }), [item, isLoading, error, fetchItem]);
 };
 
-interface ItemFilters {
-  keyword?: string;
-  category?: ItemCategory | '';
-  status?: string;
-}
-
-export const useItemsList = (initialFilters: ItemFilters = {}) => {
+export const useItemsList = (initialFilters: AdminItemFilters = { keyword: '', category: '', status: '' }) => {
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<ItemFilters>(initialFilters);
+  const [filters, setFilters] = useState<AdminItemFilters>(initialFilters);
   const toast = useToast();
 
-  const fetchItems = useCallback(async (currentFilters: ItemFilters = filters) => {
+  const fetchItems = useCallback(async (currentFilters: AdminItemFilters = filters) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await itemService.getItems(currentFilters as ServiceItemFilters);
+      const response = await itemService.getItems(currentFilters as unknown as ServiceItemFilters);
       setItems(response.data);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
@@ -68,7 +63,7 @@ export const useItemsList = (initialFilters: ItemFilters = {}) => {
     }
   }, [filters, toast]);
 
-  const updateFilters = useCallback((newFilters: ItemFilters) => {
+  const updateFilters = useCallback((newFilters: AdminItemFilters) => {
     setFilters(newFilters);
     fetchItems(newFilters);
   }, [fetchItems]);

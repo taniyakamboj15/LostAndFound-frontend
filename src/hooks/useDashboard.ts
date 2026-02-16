@@ -28,7 +28,10 @@ export const useDashboard = () => {
           ? await itemService.publicSearch({ limit: 5 })
           : await itemService.getItems({ limit: 5, sortBy: 'createdAt', order: 'desc' });
         
-        setRecentItems(itemsRes.data as any);
+        // Type handling for public search vs My Items
+        const items = itemsRes.data;
+        // Ensure items is treated as Item[]
+        setRecentItems(items as unknown as Item[]);
       } catch (itemErr) {
         console.error('Failed to fetch recent items:', itemErr);
         // Don't toast for items if metrics succeeded, just log it

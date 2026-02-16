@@ -23,6 +23,8 @@ export interface Pickup {
   endTime: string;
   qrCode: string;
   referenceCode: string;
+  isVerified?: boolean;
+  verifiedAt?: string;
   isCompleted: boolean;
   completedAt?: string;
   completedBy?: {
@@ -52,6 +54,7 @@ export interface PickupSlot {
 
 // Complete Pickup Data
 export interface CompletePickupData {
+  referenceCode: string;
   notes?: string;
 }
 

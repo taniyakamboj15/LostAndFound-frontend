@@ -6,7 +6,7 @@ import type { Item } from '../../types/item.types';
 import { ITEM_CATEGORIES } from '@constants/categories';
 import { ITEM_STATUS } from '@constants/status';
 import { formatDate } from '@utils/formatters';
-import { API_BASE_URL } from '../../constants/api';
+import { getItemImageUrl } from '@utils/image';
 
 interface ItemCardProps {
   item: Item;
@@ -20,7 +20,7 @@ const ItemCard = memo(({ item }: ItemCardProps) => {
           <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
             {item.photos && item.photos.length > 0 ? (
               <img 
-                src={item.photos[0].path.startsWith('http') ? item.photos[0].path : `${API_BASE_URL}/${item.photos[0].path}`} 
+                src={getItemImageUrl(item.photos[0].path) || ''} 
                 alt={item.description} 
                 className="w-full h-full object-cover" 
               />

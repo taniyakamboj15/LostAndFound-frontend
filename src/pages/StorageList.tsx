@@ -1,24 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLoaderData, useRevalidator, useSubmit, useActionData } from 'react-router-dom';
 import { MapPin, Plus, Package, Edit, Trash2 } from 'lucide-react';
 import { Card, Button, Badge, Modal, Input } from '@components/ui';
 import { useAuth } from '@hooks/useAuth';
-import { useStorage } from '@hooks/useStorage';
-import type { Storage } from '../types';
+import { useStorageOperations } from '@hooks/useStorageOperations';
+import { Storage, StorageFormData } from '../types';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { storageSchema } from '../validators';
 import { useToast } from '@hooks/useToast';
+import { STATUS_BADGE_CONFIG } from '@constants/ui';
 
-interface StorageFormData {
-  name: string;
-  location: string;
-  shelfNumber?: string;
-  binNumber?: string;
-  capacity: number;
-  isActive: boolean;
-}
 
 const StorageList = () => {
   const { locations, error: loaderError } = useLoaderData() as {
@@ -27,7 +20,7 @@ const StorageList = () => {
   };
   const actionData = useActionData() as { success?: boolean; error?: string; message?: string } | undefined;
   const { isAdmin, isStaff } = useAuth();
-  const { removeLocation } = useStorage();
+  const { removeLocation, getOccupancyColor, getOccupancyBarColor, prepareStorageFormData } = useStorageOperations();
   const { revalidate } = useRevalidator();
   const submit = useSubmit();
   const toast = useToast();
@@ -60,30 +53,16 @@ const StorageList = () => {
   }, [actionData, toast, reset]);
 
   const onSubmit = (data: StorageFormData) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value.toString());
-    });
-    formData.append('intent', editingLocation ? 'update-storage' : 'create-storage');
-    if (editingLocation) {
-      formData.append('id', editingLocation._id);
-    }
+    const formData = prepareStorageFormData(data, editingLocation?._id);
     submit(formData, { method: 'post' });
   };
 
-  const handleDelete = useCallback(async (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this storage location?')) {
       await removeLocation(id);
       revalidate();
     }
-  }, [removeLocation, revalidate]);
-
-  const getOccupancyColor = useCallback((count: number, capacity: number) => {
-    const percentage = (count / capacity) * 100;
-    if (percentage >= 90) return 'text-red-600 bg-red-50';
-    if (percentage >= 70) return 'text-yellow-600 bg-yellow-50';
-    return 'text-green-600 bg-green-50';
-  }, []);
+  };
 
   useEffect(() => {
     if (editingLocation) {
@@ -140,7 +119,10 @@ const StorageList = () => {
 
         {/* Storage Locations Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {locations.map((location) => (
+          {locations.map((location) => {
+             const statusConfig = STATUS_BADGE_CONFIG[String(location.isActive) as keyof typeof STATUS_BADGE_CONFIG];
+             
+             return (
             <Card key={location._id}>
               <div className="space-y-4">
                 {/* Header */}
@@ -154,11 +136,7 @@ const StorageList = () => {
                       <span>{location.location}</span>
                     </div>
                   </div>
-                  {location.isActive ? (
-                    <Badge variant="success">Active</Badge>
-                  ) : (
-                    <Badge variant="default">Inactive</Badge>
-                  )}
+                  <Badge variant={statusConfig.variant as any}>{statusConfig.label}</Badge>
                 </div>
 
                 {/* Location Details */}
@@ -187,13 +165,7 @@ const StorageList = () => {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full ${
-                        (location.currentCount / location.capacity) * 100 >= 90
-                          ? 'bg-red-600'
-                          : (location.currentCount / location.capacity) * 100 >= 70
-                          ? 'bg-yellow-600'
-                          : 'bg-green-600'
-                      }`}
+                      className={`h-2 rounded-full ${getOccupancyBarColor(location.currentCount, location.capacity)}`}
                       style={{
                         width: `${Math.min((location.currentCount / location.capacity) * 100, 100)}%`,
                       }}
@@ -229,7 +201,7 @@ const StorageList = () => {
                 )}
               </div>
             </Card>
-          ))}
+          )})}
         </div>
 
         {/* Empty State */}

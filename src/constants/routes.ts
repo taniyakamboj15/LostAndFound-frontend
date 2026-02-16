@@ -20,7 +20,8 @@ export const ROUTES = {
   
   // Reports
   REPORTS: '/reports',
-  REPORTS_NEW: '/reports/new',
+  REPORTS_NEW: '/reports/create',
+  LOST_REPORT: '/reports/create',
   REPORTS_DETAIL: '/reports/:id',
   
   // Claims
@@ -48,6 +49,9 @@ export const ROUTES = {
   // Profile
   PROFILE: '/profile',
   PROFILE_EDIT: '/profile/edit',
+  
+  // Staff
+  STAFF: '/admin/staff',
 } as const;
 
 // Helper to build route with params

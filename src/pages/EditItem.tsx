@@ -14,6 +14,7 @@ import { useStorage } from '@hooks/useStorage';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { API_BASE_URL } from '../constants/api';
 import type { UploadedFile } from '../types/item.types';
+import { usePhotoUpload } from '@hooks/usePhotoUpload';
 
 interface EditItemFormData {
   category: ItemCategory;
@@ -37,9 +38,7 @@ const EditItem = () => {
   const { updateItem, isSubmitting } = useUpdateItem(id || null);
   const { locations } = useStorage();
 
-  const [photos, setPhotos] = useState<File[]>([]);
   const [existingPhotos, setExistingPhotos] = useState<UploadedFile[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
   useEffect(() => {
     if (existingItem) {
@@ -72,48 +71,16 @@ const EditItem = () => {
     }
   }, [existingItem, reset]);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    const validFiles = files.filter((file) => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image file`);
-        return false;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} is larger than 5MB`);
-        return false;
-      }
-      return true;
-    });
-
-    const totalPhotos = existingPhotos.length + photos.length;
-    const remainingSlots = 5 - totalPhotos;
-    const filesToAdd = validFiles.slice(0, remainingSlots);
-
-    if (validFiles.length > remainingSlots) {
-      toast.error(`You can only have up to 5 photos total`);
-    }
-
-    const newPreviews: string[] = [];
-    filesToAdd.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPreviews.push(reader.result as string);
-        if (newPreviews.length === filesToAdd.length) {
-          setPhotoPreviews([...photoPreviews, ...newPreviews]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    setPhotos([...photos, ...filesToAdd]);
-  };
-
-  const removeNewPhoto = (index: number) => {
-    setPhotos(photos.filter((_, i) => i !== index));
-    setPhotoPreviews(photoPreviews.filter((_, i) => i !== index));
-  };
+  const { 
+    photos, 
+    photoPreviews, 
+    handlePhotoChange, 
+    removePhoto: removeNewPhoto 
+  } = usePhotoUpload({
+    maxPhotos: 5 - existingPhotos.length,
+    maxSizeMB: 5,
+    acceptedTypes: ['image/']
+  });
 
   const removeExistingPhoto = (index: number) => {
     setExistingPhotos(existingPhotos.filter((_, i) => i !== index));

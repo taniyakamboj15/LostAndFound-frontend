@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authService } from '../../services';
 import type { User, LoginCredentials, RegisterData, AuthResponse } from '../../types';
 import { STORAGE_KEYS } from '../../constants';
-
+import { getErrorMessage } from '@/utils/errors';
 // State interface
 interface AuthState {
   user: User | null;
@@ -28,8 +28,13 @@ export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
     try {
       const response = await authService.login(credentials);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Login failed');
+    } catch (error: unknown) {
+      let message = 'Login failed';
+      if (typeof error === 'string') message = error;
+      else if (error instanceof Error) message = error.message;
+      else if (typeof error === 'object' && error !== null && 'message' in error) message = String((error as {message: unknown}).message);
+      
+      return rejectWithValue(message);
     }
   }
 );
@@ -40,8 +45,8 @@ export const registerUser = createAsyncThunk<AuthResponse, RegisterData>(
     try {
       const response = await authService.register(data);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Registration failed');
+    } catch (error: unknown) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );

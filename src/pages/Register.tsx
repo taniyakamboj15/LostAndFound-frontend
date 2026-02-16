@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { registerUser } from '@store/slices/authSlice';
 import { useToast } from '@hooks/useToast';
 import { ROUTES } from '../constants/routes';
+import { getErrorMessage } from '../utils/errors';
 
 interface RegisterFormData {
   name: string;
@@ -35,13 +36,11 @@ const Register = () => {
     try {
       await dispatch(registerUser(data)).unwrap();
       toast.success('Registration successful! Please check your email to verify your account.');
-      toast.success('Registration successful! Please check your email to verify your account.');
       navigate(ROUTES.LOGIN);
-    } catch (err: any) {
-      // Error is handled by auth slice and displayed via toast below or here if needed
-      // But since we are using unwrap(), the error is thrown here.
-      // We can use the error message from the rejected action payload (which is err)
-      toast.error(err || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      let message = 'Registration failed. Please try again.';
+      message = getErrorMessage(err);
+      toast.error(message);
     }
   };
 

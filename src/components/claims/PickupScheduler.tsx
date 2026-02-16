@@ -1,26 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Card, Button, Spinner } from '@components/ui'; // Assuming these exist
+import { Card, Button, Spinner } from '@components/ui';
 import { format } from 'date-fns';
-import api from '@services/api';
-import toast from 'react-hot-toast'; // Assuming usage
+import { pickupService } from '@services/pickup.service';
+import { useToast } from '@hooks/useToast';
+import { PickupSlot } from '../../types/pickup.types';
 
 interface PickupSchedulerProps {
   claimId: string;
   onScheduled: () => void;
 }
 
-interface Slot {
-  startTime: string;
-  endTime: string;
-  available: boolean;
-}
-
 const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
-  const [slots, setSlots] = useState<Slot[]>([]);
+  const [slots, setSlots] = useState<PickupSlot[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<PickupSlot | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchSlots();
@@ -29,9 +25,10 @@ const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
   const fetchSlots = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/pickups/available-slots?date=${selectedDate}`);
-      if (res.data.success) {
-        setSlots(res.data.data);
+      setSelectedSlot(null);
+      const res = await pickupService.getAvailableSlots(selectedDate);
+      if (res.success) {
+        setSlots(res.data);
       }
     } catch (error) {
       console.error("Failed to fetch slots", error);
@@ -47,7 +44,7 @@ const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
     
     try {
       setSubmitting(true);
-      await api.post('/pickups', {
+      await pickupService.book({
         claimId,
         pickupDate: selectedDate,
         startTime: selectedSlot.startTime,
@@ -56,6 +53,7 @@ const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
       toast.success('Pickup scheduled successfully!');
       onScheduled();
     } catch (error) {
+      // Error is handled by service/interceptor usually, or we can show generic
       toast.error('Failed to book pickup');
     } finally {
       setSubmitting(false);
@@ -63,40 +61,46 @@ const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
   };
 
   return (
-    <Card className="p-4">
-      <h3 className="text-lg font-semibold mb-4">Schedule Pickup</h3>
+    <Card>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Schedule Pickup</h3>
       
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
-        <input 
-          type="date" 
-          value={selectedDate}
-          min={format(new Date(), 'yyyy-MM-dd')}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
-        />
+        <div className="flex gap-2">
+            <input 
+            type="date" 
+            value={selectedDate}
+            min={format(new Date(), 'yyyy-MM-dd')}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+            />
+        </div>
       </div>
 
       <div className="mb-6">
-        <h4 className="text-md font-medium mb-2">Available Slots</h4>
+        <h4 className="text-md font-medium mb-2 text-gray-900">Available Slots</h4>
         {loading ? (
-          <Spinner size="sm" />
+             <div className="flex justify-center py-4">
+                <Spinner size="sm" />
+             </div>
+        ) : slots.length === 0 ? (
+            <p className="text-gray-500 text-sm">No slots available for this date.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {slots.map((slot, idx) => (
               <button
                 key={idx}
                 disabled={!slot.available}
                 onClick={() => setSelectedSlot(slot)}
-                className={`p-2 text-sm rounded-md border ${
+                className={`p-2 text-xs font-medium rounded-md border transition-colors ${
                   selectedSlot === slot 
                     ? 'bg-primary-600 text-white border-primary-600'
                     : slot.available 
                       ? 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                      : 'bg-gray-50 text-gray-400 cursor-not-allowed border-gray-200'
                 }`}
               >
-                {slot.startTime} - {slot.endTime}
+                {slot.startTime}
               </button>
             ))}
           </div>
@@ -108,6 +112,7 @@ const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
         disabled={!selectedSlot} 
         isLoading={submitting}
         onClick={handleBook}
+        variant="primary"
       >
         Confirm Booking
       </Button>

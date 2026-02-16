@@ -15,7 +15,7 @@ import { API_BASE_URL } from '../constants/api';
 const ItemDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin, isStaff } = useAuth();
+  const { isAdmin, isStaff, user } = useAuth();
   const { item, isLoading: loading } = useItemDetail(id || null);
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
@@ -100,6 +100,9 @@ const ItemDetail = () => {
                   </Badge>
                   {item.isHighValue && (
                     <Badge variant="warning">High Value</Badge>
+                  )}
+                  {item.claimedBy && (typeof item.claimedBy === 'object' ? item.claimedBy._id : item.claimedBy) === (isStaff() ? null : user?._id) && (
+                     <Badge variant="info">Claimed by You</Badge>
                   )}
                 </div>
               </div>

@@ -96,8 +96,9 @@ const Navbar = () => {
               </>
             )}
 
-            {(isAdmin() || isStaff()) && (
+            {(isAdmin() || isStaff() || isAuthenticated) && (
               <>
+
                 <Link
                   to="/pickups"
                   className={cn(
@@ -132,6 +133,20 @@ const Navbar = () => {
                     )}
                   >
                     Analytics
+                  </Link>
+                )}
+                
+                {isAdmin() && (
+                  <Link
+                    to={ROUTES.STAFF}
+                    className={cn(
+                      'px-4 py-2 rounded-lg transition-colors',
+                      location.pathname.startsWith('/admin/staff')
+                        ? 'bg-primary-50 text-primary-700 font-medium'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    )}
+                  >
+                    Staff
                   </Link>
                 )}
               </>

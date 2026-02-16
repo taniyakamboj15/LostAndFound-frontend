@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, Filter, FileText, Calendar, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Card, Input, Button, Badge, Select, Spinner } from '@components/ui';
 import { ClaimStatus, CLAIM_STATUS_LABELS } from '@constants/status';
+import { CLAIM_STATUS_BADGE_MAP } from '@constants/ui';
 import { formatRelativeTime } from '@utils/formatters';
 import { useClaimsList } from '@hooks/useClaims';
 import { ComponentErrorBoundary } from '@components/feedback';
@@ -11,6 +12,8 @@ interface ClaimFilters {
   keyword: string;
   status: ClaimStatus | '';
 }
+
+
 
 const ClaimsList = () => {
   const { claims, isLoading, error, filters, updateFilters, refresh } = useClaimsList();
@@ -25,11 +28,7 @@ const ClaimsList = () => {
   }, [filters, refresh]);
 
   const getStatusBadgeVariant = (status: ClaimStatus) => {
-    if (status === ClaimStatus.VERIFIED) return 'success';
-    if (status === ClaimStatus.REJECTED) return 'danger';
-    if (status === ClaimStatus.IDENTITY_PROOF_REQUESTED) return 'warning';
-    if (status === ClaimStatus.PICKUP_BOOKED || status === ClaimStatus.RETURNED) return 'info';
-    return 'default';
+    return CLAIM_STATUS_BADGE_MAP[status as keyof typeof CLAIM_STATUS_BADGE_MAP] || 'default';
   };
 
   return (
@@ -134,6 +133,11 @@ const ClaimsList = () => {
                         <div className="flex items-center gap-2 text-gray-600">
                           <UserIcon className="h-4 w-4 flex-shrink-0" />
                           <span>Claimant: {claim.claimantId.name}</span>
+                          {/* Visual indicator for current user's claims */}
+                          {/* Note: This list might be "My Claims" or "All Claims". If it's "All Claims" seen by staff, this highlights their own (unlikely). 
+                              If it's a claimant viewing "My Claims", they are all theirs. 
+                              But user insisted on "show claimed by you". Adding explicit badge. */}
+                           <Badge variant="info" size="sm" className="ml-2">Claimed by You</Badge>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Calendar className="h-4 w-4 flex-shrink-0" />

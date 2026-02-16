@@ -197,12 +197,24 @@ export const router = createBrowserRouter([
         index: true,
         element: <PublicSearch />,
       },
+    ],
+  },
+  {
+    path: '/terms',
+    element: <MainLayout />,
+    children: [
       {
-        path: 'terms',
+        index: true,
         element: <Terms />,
       },
+    ],
+  },
+  {
+    path: '/privacy',
+    element: <MainLayout />,
+    children: [
       {
-        path: 'privacy',
+        index: true,
         element: <Privacy />,
       },
     ],

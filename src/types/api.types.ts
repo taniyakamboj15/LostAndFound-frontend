@@ -16,11 +16,17 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+// API Error Detail
+export interface BackendErrorDetail {
+  message: string;
+  code?: string;
+}
+
 // API Error
 export interface ApiError {
   success: false;
   message: string;
-  error?: string;
+  error?: BackendErrorDetail | string;
   errors?: Array<{
     field: string;
     message: string;

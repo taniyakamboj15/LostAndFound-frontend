@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ChevronLeft,
@@ -7,13 +6,14 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Upload
+  Upload,
+  MapPin
 } from 'lucide-react';
 import { Card, Badge, Button, Modal, Textarea, Spinner } from '@components/ui';
 import { ClaimStatus, CLAIM_STATUS_LABELS } from '@constants/status';
 import { formatDate, formatRelativeTime } from '@utils/formatters';
 import { useAuth } from '@hooks/useAuth';
-import { useClaimDetail } from '@hooks/useClaimDetail';
+import { useClaimActions } from '@hooks/useClaimActions';
 import { ComponentErrorBoundary } from '@components/feedback';
 import PickupScheduler from '@components/claims/PickupScheduler';
 import { API_BASE_URL } from '../constants/api';
@@ -29,37 +29,19 @@ const ClaimDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, isAdmin, isStaff } = useAuth();
-  const { claim, isLoading: loading, updateStatus } = useClaimDetail(id || null);
-  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleVerify = async () => {
-    setIsSubmitting(true);
-    try {
-      await updateStatus(ClaimStatus.VERIFIED);
-    } catch (error) {
-      // Error handled by hook
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleReject = async () => {
-    if (!rejectionReason.trim()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await updateStatus(ClaimStatus.REJECTED, rejectionReason);
-      setIsRejectModalOpen(false);
-    } catch (error) {
-      // Error handled by hook
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  
+  const { 
+    claim, 
+    isLoading: loading, 
+    handleVerify, 
+    handleReject, 
+    isSubmitting,
+    isRejectModalOpen,
+    openRejectModal,
+    closeRejectModal,
+    rejectionReason,
+    setRejectionReason
+  } = useClaimActions(id || null);
 
   const getStatusBadgeVariant = (status: ClaimStatus) => {
     if (status === ClaimStatus.VERIFIED) return 'success';
@@ -76,6 +58,19 @@ const ClaimDetail = () => {
       </div>
     );
   }
+
+  const claimantId = typeof claim.claimantId === 'object' ? (claim.claimantId as User)._id : claim.claimantId;
+  const isClaimant = user?._id === claimantId || user?.id === claimantId;
+
+  console.log('ClaimDetail Debug:', {
+    claimStatus: claim.status,
+    userId: user?._id,
+    userAltId: user?.id,
+    claimantId: claimantId,
+    isClaimant,
+    match_id: user?._id === claimantId,
+    match_id_alt: user?.id === claimantId
+  });
 
   return (
     <ComponentErrorBoundary title="Claim Detail Error">
@@ -102,6 +97,11 @@ const ClaimDetail = () => {
             <p className="text-gray-600 mt-1">
               Filed {formatRelativeTime(claim.filedAt || claim.createdAt)}
             </p>
+            {isClaimant && (
+              <div className="mt-2">
+                <Badge variant="info">Claimed by You</Badge>
+              </div>
+            )}
           </div>
 
           {/* Actions (Staff/Admin only) */}
@@ -109,7 +109,7 @@ const ClaimDetail = () => {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => setIsRejectModalOpen(true)}
+                onClick={openRejectModal}
                 disabled={isSubmitting}
               >
                 <XCircle className="h-5 w-5 mr-2" />
@@ -127,7 +127,7 @@ const ClaimDetail = () => {
           )}
 
           {/* Actions (Claimant only) */}
-          {user?._id === (typeof claim.claimantId === 'object' ? claim.claimantId._id : claim.claimantId) && 
+          {isClaimant && 
             claim.status === ClaimStatus.IDENTITY_PROOF_REQUESTED && (
             <Link to={`/claims/${claim._id}/proof`}>
               <Button variant="primary">
@@ -267,7 +267,7 @@ const ClaimDetail = () => {
             </Card>
 
             {/* Pickup Scheduling (Claimant only, when verified) */}
-            {claim.status === ClaimStatus.VERIFIED && (user?._id === (typeof claim.claimantId === 'object' ? claim.claimantId._id : claim.claimantId)) && (
+            {claim.status === ClaimStatus.VERIFIED && isClaimant && (
                <div className="mt-6">
                   <PickupScheduler claimId={claim._id || ''} onScheduled={() => navigate('/claims')} />
                </div>
@@ -348,17 +348,53 @@ const ClaimDetail = () => {
                       'Claim verified. Claimant can now book a pickup.'}
                     {claim.status === ClaimStatus.FILED &&
                       'Claim filed. Awaiting initial review.'}
+                    {claim.status === ClaimStatus.PICKUP_BOOKED &&
+                      'Pickup scheduled. Please visit the storage location at the scheduled time.'}
+                    {claim.status === ClaimStatus.RETURNED &&
+                      'Item has been returned to the claimant. Case closed.'}
+                    {claim.status === ClaimStatus.REJECTED &&
+                      `Claim rejected. Reason: ${claim.rejectionReason || 'No reason provided.'}`}
                   </p>
                 </div>
               </div>
             </Card>
+
+            {/* Storage/Owner Information (Verified only) */}
+            {claim.status === ClaimStatus.VERIFIED && (
+              <Card>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Pickup Location
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Location</p>
+                      <p className="text-sm text-gray-900">
+                        {claim.itemId?.storageLocation?.name || 'Main Storage'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {claim.itemId?.storageLocation?.location || 'Central Office'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Hours</p>
+                      <p className="text-sm text-gray-900">Mon-Fri, 9AM - 5PM</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
 
         {/* Reject Modal */}
         <Modal
           isOpen={isRejectModalOpen}
-          onClose={() => setIsRejectModalOpen(false)}
+          onClose={closeRejectModal}
           title="Reject Claim"
           size="md"
         >
@@ -378,7 +414,7 @@ const ClaimDetail = () => {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => setIsRejectModalOpen(false)}
+                onClick={closeRejectModal}
                 fullWidth
                 disabled={isSubmitting}
               >

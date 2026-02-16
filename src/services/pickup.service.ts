@@ -15,6 +15,12 @@ export const pickupService = {
     return response.data;
   },
 
+  // Get my pickups (Claimant)
+  getMyPickups: async (): Promise<PickupsListResponse> => {
+    const response = await api.get<PickupsListResponse>(`${API_ENDPOINTS.PICKUPS.BASE}/my-pickups`);
+    return response.data;
+  },
+
   // Get available pickup slots
   getAvailableSlots: async (date?: string): Promise<AvailableSlotsResponse> => {
     const response = await api.get<AvailableSlotsResponse>(
@@ -32,7 +38,7 @@ export const pickupService = {
 
   // Complete a pickup
   complete: async (id: string, data: CompletePickupData): Promise<PickupResponse> => {
-    const response = await api.patch<PickupResponse>(
+    const response = await api.post<PickupResponse>(
       API_ENDPOINTS.PICKUPS.COMPLETE(id),
       data
     );

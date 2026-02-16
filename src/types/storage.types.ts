@@ -31,6 +31,16 @@ export interface UpdateStorageData {
   isActive?: boolean;
 }
 
+// Storage Form Data
+export interface StorageFormData {
+  name: string;
+  location: string;
+  shelfNumber?: string;
+  binNumber?: string;
+  capacity: number;
+  isActive: boolean;
+}
+
 // Storage Response
 export interface StorageResponse {
   success: boolean;

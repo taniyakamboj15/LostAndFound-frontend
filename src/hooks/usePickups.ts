@@ -3,8 +3,10 @@ import { getErrorMessage } from '@utils/errors';
 import { pickupService } from '@services/pickup.service';
 import { useToast } from './useToast';
 import type { Pickup } from '../types/pickup.types';
+import { useAuth } from './useAuth';
 
 export const usePickups = () => {
+  const { user } = useAuth();
   const [pickups, setPickups] = useState<Pickup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +16,9 @@ export const usePickups = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await pickupService.getAll();
+      const response = user?.role === 'CLAIMANT'
+        ? await pickupService.getMyPickups()
+        : await pickupService.getAll();
       setPickups(response.data);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
@@ -60,11 +64,11 @@ export const usePickupDetail = (id: string | undefined) => {
     }
   }, [id, toast]);
 
-  const completePickup = useCallback(async (notes?: string) => {
+  const completePickup = useCallback(async (referenceCode: string, notes?: string) => {
     if (!id) return;
     setIsCompleting(true);
     try {
-      await pickupService.complete(id, { notes });
+      await pickupService.complete(id, { referenceCode, notes });
       toast.success('Pickup marked as completed!');
       await fetchPickup();
       return true;

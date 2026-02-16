@@ -1,120 +1,100 @@
-# Lost & Found Platform - Frontend
+# Lost & Found Item Recovery Platform - Frontend
 
-Production-grade React frontend for the Lost & Found Item Recovery Platform.
+> **Developed by: Taniya Kamboj**
 
-## 🚀 Features
+![Status](https://img.shields.io/badge/Status-Production-brightgreen)
+![React](https://img.shields.io/badge/React-18.0-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Tailwind](https://img.shields.io/badge/Tailwind-3.4-38bdf8)
 
-- **React 18** with TypeScript
-- **React Router v7** with object-based routing
-- **Redux Toolkit** for state management
-- **React Hook Form** + **Yup** validation
-- **Tailwind CSS** for styling
-- **Framer Motion** for animations
-- **Axios** with automatic token refresh
-- **Full TypeScript** - Zero `any` types
-- **Modular Architecture** - Easy to maintain and scale
+## 📖 Description
+
+A full-stack system for organizations, transit authorities, or public venues to catalog lost items, allow owners to file claims, and manage the verification and return process with location-based matching.
+
+This repository contains the **Frontend** application, built with React, TypeScript, and Tailwind CSS.
+
+- **Frontend Repository:** [https://github.com/taniyakamboj15/LostAndFound-frontend.git](https://github.com/taniyakamboj15/LostAndFound-frontend.git)
+- **Backend Repository:** [https://github.com/taniyakamboj15/LostAndFound-backend.git](https://github.com/taniyakamboj15/LostAndFound-backend.git)
+
+## 🎯 Use Cases
+
+- **Airports and Transit Authorities**: Managing passenger lost belongings.
+- **Universities and Large Campuses**: Centralizing lost-and-found operations.
+- **Hotels and Event Venues**: Handling guest forgotten items.
+
+## ✨ Features
+
+- **User Authentication**: Secure login/register for Admin, Staff, and Claimant roles.
+- **Found Item Registration**: Staff can log items with category, description, photos, and location/date found.
+- **Lost Item Reports**: Owners can submit reports with identifying details to aid recovery.
+- **Automated Matching Engine**: Suggests potential matches based on category, description keywords, and date/location proximity.
+- **Claim Verification Workflow**: End-to-end process: Claim Filed → Identity Proof Requested → Verified → Returned.
+- **Photo-Based Comparison**: Claimants can visually confirm ownership by asserting matches against found item photos.
+- **Item Storage Tracking**: Manage shelf/bin locations and track retention period countdowns.
+- **Handoff Scheduling**: Claimants can book time slots for item pickup; Staff verifies via QR/Reference code.
+- **Unclaimed Item Disposition**: Workflow to donate, auction, or dispose of items after the retention period expires.
+- **Dashboard Analytics**: Insights on items reported, matched rates, average recovery time, and category breakdowns.
+- **Notification System**: Alerts for potential matches, claim status updates, and retention expiry warnings.
+- **Public Search Portal**: Allows claimants to graze found items without requiring a login.
+
+## 🛠️ Tech Stack
+
+- **Framework**: React 18 with TypeScript
+- **Routing**: React Router v7
+- **State Management**: Redux Toolkit
+- **Styling**: Tailwind CSS, Framer Motion
+- **Forms**: React Hook Form with Yup validation
+- **HTTP Client**: Axios
 
 ## 📁 Project Structure
 
-```
+```bash
 src/
 ├── components/     # Reusable UI components
-├── constants/      # Centralized constants (no magic strings)
-├── features/       # Feature-specific components
+├── constants/      # Centralized constants
+├── features/       # Feature-specific logic
 ├── hooks/          # Custom React hooks
 ├── layouts/        # Page layouts
-├── pages/          # Route components
-├── services/       # API services
-├── store/          # Redux store and slices
+├── pages/          # Application routes
+├── services/       # API integration
+├── store/          # Redux state management
 ├── types/          # TypeScript definitions
-├── validators/     # Yup schemas
-├── utils/          # Utility functions
-└── styles/         # Global styles
+└── utils/          # Helper functions
 ```
 
-## 🛠️ Installation
+## 🚀 Installation & Setup
 
-```bash
-# Install dependencies
-npm install
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/taniyakamboj15/LostAndFound-frontend.git
+    cd LostAndFound-frontend
+    ```
 
-# Start development server
-npm run dev
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-# Build for production
-npm run build
+3.  **Configure Environment**
+    Create a `.env` file in the root directory:
+    ```env
+    VITE_API_URL=http://localhost:5000
+    ```
 
-# Preview production build
-npm run preview
-```
+4.  **Start Development Server**
+    ```bash
+    npm run dev
+    ```
 
-## 🔧 Environment Variables
+5.  **Build for Production**
+    ```bash
+    npm run build
+    ```
 
-Create a `.env` file:
+## 🤝 Contribution
 
-```
-VITE_API_URL=http://localhost:5000
-```
-
-## 📝 Development Status
-
-**Current Progress: 30%**
-
-### ✅ Completed
-- Project setup and configuration
-- Constants and types (100% coverage)
-- API services layer
-- Redux store (auth, items)
-- Validators (Yup schemas)
-- Custom hooks (useAuth, useDebounce, useToast)
-- Utility functions
-- Basic layouts and routing
-- Error boundary
-
-### 🚧 In Progress
-- UI components library
-- Authentication pages
-- Dashboard pages
-- Feature modules
-
-### 📋 TODO
-- Complete all feature modules
-- Implement React Router loaders/actions
-- Add animations
-- Responsive design
-- Testing
-- Documentation
-
-## 🎨 Code Standards
-
-- **No `any` types** - Strict TypeScript
-- **No magic strings** - All constants centralized
-- **Modular design** - Small, focused files
-- **React.memo** for optimization
-- **useCallback** and **useMemo** where needed
-- **Uncontrolled forms** with React Hook Form
-
-## 📦 Key Dependencies
-
-- react: ^18.3.1
-- react-router-dom: ^7.1.1
-- @reduxjs/toolkit: ^2.5.0
-- react-hook-form: ^7.54.2
-- yup: ^1.6.0
-- axios: ^1.7.9
-- tailwindcss: ^3.4.17
-- framer-motion: ^11.15.0
-
-## 🚀 Next Steps
-
-1. Build complete UI component library
-2. Implement all feature pages
-3. Add React Router loaders/actions
-4. Implement animations
-5. Add responsive design
-6. Write tests
-7. Deploy
+Contributions are welcome! Please fork the repository and submit a pull request.
 
 ## 📄 License
 
-MIT
+This project is licensed under the MIT License.

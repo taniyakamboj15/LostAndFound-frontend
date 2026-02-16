@@ -14,17 +14,14 @@ import { formatDate, formatRelativeTime } from '@utils/formatters';
 import { useReportDetail } from '@hooks/useReports';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { Match } from '../types/match.types';
+import { getConfidenceBadge } from '@utils/ui';
 
 const ReportDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { report, isLoading: loading } = useReportDetail(id || null);
 
-  const getConfidenceBadge = (confidence: number) => {
-    if (confidence >= 0.8) return { variant: 'success' as const, label: 'High Match' };
-    if (confidence >= 0.6) return { variant: 'warning' as const, label: 'Medium Match' };
-    return { variant: 'default' as const, label: 'Low Match' };
-  };
+
 
   if (loading || !report) {
     return (
@@ -106,7 +103,7 @@ const ReportDetail = () => {
 
               {(report.matches?.length || 0) > 0 ? (
                 <div className="space-y-4">
-                  {report.matches?.map((match: Match) => {
+                  {(report.matches as unknown as Match[])?.map((match: Match) => {
                     const confidenceBadge = getConfidenceBadge(match.confidence);
                     return (
                       <div

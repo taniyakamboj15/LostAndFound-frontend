@@ -110,9 +110,14 @@ export const useClaimsList = (initialFilters: ClaimFilters = {}) => {
     setIsLoading(true);
     setError(null);
     try {
+      const cleanFilters = {
+        ...currentFilters,
+        status: currentFilters.status || undefined
+      };
+
       const response = user?.role === 'CLAIMANT'
-        ? await claimService.getMyClaims(currentFilters as any)
-        : await claimService.getAll(currentFilters as any);
+        ? await claimService.getMyClaims(cleanFilters)
+        : await claimService.getAll(cleanFilters);
       setClaims(response.data);
     } catch (err: unknown) {
       const error = err as ApiError;

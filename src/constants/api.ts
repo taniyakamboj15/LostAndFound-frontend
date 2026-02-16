@@ -60,7 +60,7 @@ export const API_ENDPOINTS = {
   // Pickups
   PICKUPS: {
     BASE: '/api/pickups',
-    SLOTS: '/api/pickups/slots',
+    SLOTS: '/api/pickups/available-slots',
     BY_ID: (id: string) => `/api/pickups/${id}`,
     COMPLETE: (id: string) => `/api/pickups/${id}/complete`,
   },

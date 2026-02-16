@@ -13,7 +13,11 @@ export async function completePickupAction({ request, params }: ActionFunctionAr
 
   try {
     if (intent === 'complete') {
-      await pickupService.complete(id, {});
+      const referenceCode = formData.get('referenceCode') as string;
+      if (!referenceCode) {
+        return { error: 'Reference code is required' };
+      }
+      await pickupService.complete(id, { referenceCode });
       return { success: true, message: 'Pickup completed successfully' };
     }
 

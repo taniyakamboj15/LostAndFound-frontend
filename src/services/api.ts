@@ -1,18 +1,17 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_BASE_URL, STORAGE_KEYS } from '../constants';
-import { ApiError } from '../types';
+import { ApiError, BackendErrorDetail } from '../types';
 
-// Create Axios instance
+
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Important for httpOnly cookies
+  withCredentials: true, 
 });
 
-// Request interceptor - Add auth token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -28,16 +27,13 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle errors and token refresh
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  async (error: AxiosError<ApiError>) => {
+  async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Handle 401 Unauthorized - Try to refresh token
-    // Skip if the request was for login or register or refresh
     const isAuthRequest = originalRequest.url?.includes('auth/login') || 
                          originalRequest.url?.includes('auth/register') ||
                          originalRequest.url?.includes('auth/refresh');
@@ -71,21 +67,34 @@ api.interceptors.response.use(
         
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - Clear tokens and redirect to login
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER);
         
-        // Redirect to login
         window.location.href = '/login';
         
         return Promise.reject(refreshError);
       }
     }
 
-    // Handle other errors
-    const errorData = error.response?.data as any; // Cast to any to access dynamic properties
-    const errorMessage = errorData?.error?.message || errorData?.message || error.message || 'An error occurred';
+    const errorData = error.response?.data as {
+      success?: boolean;
+      error?: BackendErrorDetail | string;
+      message?: string;
+      errors?: Array<{ field: string; message: string }>;
+    } | undefined;
+
+    let errorMessage = error.message || 'An error occurred';
+
+    if (errorData) {
+      if (typeof errorData.error === 'object' && errorData.error?.message) {
+        errorMessage = errorData.error.message;
+      } else if (typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    }
     
     const apiError: ApiError = {
       success: false,

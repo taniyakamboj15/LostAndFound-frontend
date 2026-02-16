@@ -8,12 +8,7 @@ import { ItemStatus, ITEM_STATUS } from '@constants/status';
 import { useAuth } from '@hooks/useAuth';
 import { useItemsList } from '@hooks/useItems';
 import { ComponentErrorBoundary } from '@components/feedback';
-
-interface ItemFilters {
-  keyword: string;
-  category: ItemCategory | '';
-  status: ItemStatus | '';
-}
+import { AdminItemFilters } from '../types/ui.types';
 
 const ItemsList = () => {
   const { isAdmin, isStaff } = useAuth();
@@ -39,7 +34,7 @@ const ItemsList = () => {
   ], []);
 
   // Memoized filter handlers
-  const handleFilterChange = useCallback((key: keyof ItemFilters, value: string) => {
+  const handleFilterChange = useCallback((key: keyof AdminItemFilters, value: string) => {
     updateFilters({ ...filters, [key]: value });
   }, [filters, updateFilters]);
 

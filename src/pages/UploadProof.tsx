@@ -7,42 +7,24 @@ import { useToast } from '@hooks/useToast';
 import { claimService } from '@services/claim.service';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { cn } from '@utils/helpers';
+import { usePhotoUpload } from '@hooks/usePhotoUpload';
 
 const UploadProof = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [proofType, setProofType] = useState('IDENTITY_PROOF');
-  const [files, setFiles] = useState<File[]>([]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    
-    const validFiles = selectedFiles.filter((file) => {
-      const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-      if (!validTypes.includes(file.type)) {
-        toast.error(`${file.name} is not a valid format (JPG, PNG, or PDF only)`);
-        return false;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`${file.name} is larger than 10MB`);
-        return false;
-      }
-      return true;
-    });
-
-    if (files.length + validFiles.length > 5) {
-      toast.error('You can only upload up to 5 documents');
-      return;
-    }
-
-    setFiles([...files, ...validFiles]);
-  };
-
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
-  };
+  const [proofType, setProofType] = useState('GOVERNMENT_ID');
+  /* Hook logic replacement */
+  const { 
+    photos: files, 
+    handlePhotoChange, 
+    removePhoto 
+  } = usePhotoUpload({
+    maxPhotos: 5,
+    maxSizeMB: 10,
+    acceptedTypes: ['image/jpeg', 'image/png', 'application/pdf']
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +75,10 @@ const UploadProof = () => {
                 value={proofType}
                 onChange={(e) => setProofType(e.target.value)}
                 options={[
-                  { value: 'IDENTITY_PROOF', label: 'Identity Proof (ID, Passport)' },
-                  { value: 'OWNERSHIP_PROOF', label: 'Ownership Proof (Receipt, Photo)' },
+                  { value: 'GOVERNMENT_ID', label: 'Government ID (Passport, Driver License)' },
+                  { value: 'INVOICE', label: 'Purchase Invoice / Receipt' },
+                  { value: 'PHOTO', label: 'Photo Verification' },
+                  { value: 'OWNERSHIP_PROOF', label: 'Other Proof of Ownership' },
                   { value: 'OTHER', label: 'Other Document' },
                 ]}
                 fullWidth
@@ -132,7 +116,7 @@ const UploadProof = () => {
                     className="hidden"
                     accept="image/*,.pdf"
                     multiple
-                    onChange={handleFileChange}
+                    onChange={handlePhotoChange}
                   />
                 </label>
               </div>
@@ -154,7 +138,7 @@ const UploadProof = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeFile(index)}
+                        onClick={() => removePhoto(index)}
                         className="p-1 hover:text-red-600 transition-colors"
                       >
                         <X className="h-4 w-4" />
