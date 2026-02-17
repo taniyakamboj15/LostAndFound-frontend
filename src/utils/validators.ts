@@ -7,12 +7,14 @@ export const validateFileSize = (file: File): boolean => {
 
 // Validate file type (images)
 export const validateImageType = (file: File): boolean => {
-  return FILE_UPLOAD.ACCEPTED_IMAGE_TYPES.includes(file.type as any);
+  const allowedTypes: readonly string[] = FILE_UPLOAD.ACCEPTED_IMAGE_TYPES;
+  return allowedTypes.includes(file.type);
 };
 
 // Validate file type (documents)
 export const validateDocumentType = (file: File): boolean => {
-  return FILE_UPLOAD.ACCEPTED_DOCUMENT_TYPES.includes(file.type as any);
+  const allowedTypes: readonly string[] = FILE_UPLOAD.ACCEPTED_DOCUMENT_TYPES;
+  return allowedTypes.includes(file.type);
 };
 
 // Validate email format

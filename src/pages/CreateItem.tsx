@@ -4,25 +4,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Button, Input, Select, Textarea, Card } from '@components/ui';
 import { itemSchema } from '@validators';
-import { ItemCategory, ITEM_CATEGORIES } from '@constants/categories';
+import { ITEM_CATEGORIES } from '@constants/categories';
 import { useCreateItem } from '@hooks/useItems';
 import { useStorage } from '@hooks/useStorage';
 import { useToast } from '@hooks/useToast';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { cn } from '@utils/helpers';
 import { usePhotoUpload } from '@hooks/usePhotoUpload';
-
-interface CreateItemFormData {
-  category: ItemCategory;
-  description: string;
-  locationFound: string;
-  dateFound: string;
-  finderName?: string;
-  finderContact?: string;
-  isHighValue: boolean;
-  estimatedValue?: number;
-  storageLocation?: string | null;
-}
+import { CreateItemFormData } from '@/types/createItem.types';
 
 const CreateItem = () => {
   const navigate = useNavigate();

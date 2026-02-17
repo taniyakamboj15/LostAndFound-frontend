@@ -1,12 +1,6 @@
-import { ReactNode } from 'react';
+import { CardProps } from '@app-types/ui.types';
 import { cn } from '@utils/helpers';
-
-export interface CardProps {
-  children: ReactNode;
-  className?: string;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  hover?: boolean;
-}
+import { CARD_PADDINGS } from '@constants/ui';
 
 const Card = ({
   children,
@@ -14,18 +8,11 @@ const Card = ({
   padding = 'md',
   hover = false,
 }: CardProps) => {
-  const paddingStyles = {
-    none: '',
-    sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8',
-  };
-
   return (
     <div
       className={cn(
         'bg-white rounded-lg shadow',
-        paddingStyles[padding],
+        CARD_PADDINGS[padding],
         hover && 'transition-shadow hover:shadow-lg',
         className
       )}

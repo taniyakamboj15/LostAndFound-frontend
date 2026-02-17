@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import BackButton from '@components/ui/BackButton';
 import { 
-  ChevronLeft,
   User as UserIcon,
   FileText,
   CheckCircle,
@@ -62,27 +62,12 @@ const ClaimDetail = () => {
   const claimantId = typeof claim.claimantId === 'object' ? (claim.claimantId as User)._id : claim.claimantId;
   const isClaimant = user?._id === claimantId || user?.id === claimantId;
 
-  console.log('ClaimDetail Debug:', {
-    claimStatus: claim.status,
-    userId: user?._id,
-    userAltId: user?.id,
-    claimantId: claimantId,
-    isClaimant,
-    match_id: user?._id === claimantId,
-    match_id_alt: user?.id === claimantId
-  });
+
 
   return (
     <ComponentErrorBoundary title="Claim Detail Error">
       <div className="space-y-6">
-        {/* Back Button */}
-        <Link to="/claims">
-          <Button variant="ghost" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Claims
-          </Button>
-        </Link>
-
+        <BackButton label="Back to Claims" />
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
@@ -355,6 +340,13 @@ const ClaimDetail = () => {
                     {claim.status === ClaimStatus.REJECTED &&
                       `Claim rejected. Reason: ${claim.rejectionReason || 'No reason provided.'}`}
                   </p>
+              {claim.status === ClaimStatus.PICKUP_BOOKED && (
+                <Link to={`/pickups`}>
+                  <Button variant="primary" size="sm">
+                    View Pickup
+                  </Button>
+                </Link>
+              )}
                 </div>
               </div>
             </Card>

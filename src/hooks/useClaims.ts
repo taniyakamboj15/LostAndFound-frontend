@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { claimService } from '@services/claim.service';
 import { useAuth } from './useAuth';
 import { useToast } from './useToast';
+import { useDebounce } from './useDebounce';
 import { ClaimStatus } from '@constants/status';
 import { Claim } from '../types/claim.types';
 import { ApiError } from '../types/api.types';
@@ -104,9 +105,10 @@ export const useClaimsList = (initialFilters: ClaimFilters = {}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ClaimFilters>(initialFilters);
+  const debouncedFilters = useDebounce(filters, 500);
   const toast = useToast();
 
-  const fetchClaims = useCallback(async (currentFilters: ClaimFilters = filters) => {
+  const fetchClaims = useCallback(async (currentFilters: ClaimFilters = debouncedFilters) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -127,16 +129,16 @@ export const useClaimsList = (initialFilters: ClaimFilters = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, toast]);
+  }, [debouncedFilters, toast, user?.role]); // Added user?.role dependency
 
   const updateFilters = useCallback((newFilters: ClaimFilters) => {
     setFilters(newFilters);
-    fetchClaims(newFilters);
-  }, [fetchClaims]);
+    // Removed immediate fetchClaims call
+  }, []);
 
   useEffect(() => {
-    fetchClaims();
-  }, [fetchClaims]);
+    fetchClaims(debouncedFilters);
+  }, [debouncedFilters]); // Trigger fetch when debounced filters change
 
   return useMemo(() => ({
     claims,

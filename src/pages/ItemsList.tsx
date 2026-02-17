@@ -39,8 +39,8 @@ const ItemsList = () => {
   }, [filters, updateFilters]);
 
   const handleSearch = useCallback(() => {
-    refresh(filters);
-  }, [filters, refresh]);
+    refresh();
+  }, [refresh]);
 
 
   return (

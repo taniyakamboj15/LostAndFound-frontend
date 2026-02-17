@@ -1,12 +1,7 @@
-import { TextareaHTMLAttributes, forwardRef } from 'react';
+import { forwardRef } from 'react';
+import { TextareaProps } from '@app-types/ui.types';
 import { cn } from '@utils/helpers';
-
-export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  fullWidth?: boolean;
-}
+import { INPUT_ERROR_STYLES } from '@constants/ui';
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   (
@@ -44,9 +39,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
             'disabled:bg-gray-100 disabled:cursor-not-allowed',
             'resize-y',
-            error
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-gray-300',
+            INPUT_ERROR_STYLES[String(!!error) as keyof typeof INPUT_ERROR_STYLES],
             fullWidth && 'w-full',
             className
           )}

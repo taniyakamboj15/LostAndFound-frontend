@@ -110,13 +110,13 @@ const AdminStaff = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={roleConfig.variant as any} className="flex items-center w-fit gap-1">
+                          <Badge variant={roleConfig.variant} className="flex items-center w-fit gap-1">
                             <RoleIcon className="w-3 h-3" />
                             {u.role}
                           </Badge>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={statusConfig.variant as any}>
+                          <Badge variant={statusConfig.variant}>
                             {statusConfig.label}
                           </Badge>
                         </td>

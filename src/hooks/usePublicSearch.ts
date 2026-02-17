@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useDebounce } from './useDebounce';
 
 import { PublicItem, ApiResponse } from '../types';
 
@@ -12,11 +13,12 @@ export const usePublicSearch = () => {
     dateFrom: '',
     dateTo: '',
   });
+  const debouncedFilters = useDebounce(filters, 500);
   const [items, setItems] = useState<PublicItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchItems = useCallback(async (currentFilters: PublicSearchFilters = filters) => {
+  const fetchItems = useCallback(async (currentFilters: PublicSearchFilters = debouncedFilters) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -42,7 +44,7 @@ export const usePublicSearch = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, [debouncedFilters]);
 
   const updateFilters = useCallback((newFilters: PublicSearchFilters) => {
     setFilters(newFilters);
@@ -57,12 +59,12 @@ export const usePublicSearch = () => {
       dateTo: '',
     };
     setFilters(cleared);
-    fetchItems(cleared);
-  }, [fetchItems]);
+    // Debounce will handle the fetch
+  }, []);
 
   useEffect(() => {
-    fetchItems();
-  }, []); // Initial fetch only on mount
+    fetchItems(debouncedFilters);
+  }, [debouncedFilters]); // Trigger fetch when debounced filters change
 
   return useMemo(() => ({
     items,

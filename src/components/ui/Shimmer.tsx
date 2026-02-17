@@ -1,5 +1,6 @@
 import Spinner from './Spinner';
 import { cn } from '@utils/helpers';
+import { ShimmerCardProps, ShimmerListProps, ShimmerTableProps } from '@app-types/ui.types';
 
 export const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -7,7 +8,7 @@ export const PageLoader = () => (
   </div>
 );
 
-export const ShimmerCard = ({ className }: { className?: string }) => (
+export const ShimmerCard = ({ className }: ShimmerCardProps) => (
   <div className={cn("bg-white rounded-lg shadow-sm p-6 animate-pulse", className)}>
     <div className="flex items-center justify-between mb-4">
       <div className="h-4 bg-gray-200 rounded w-24"></div>
@@ -21,7 +22,7 @@ export const ShimmerCard = ({ className }: { className?: string }) => (
   </div>
 );
 
-export const ShimmerList = ({ count = 6 }: { count?: number }) => (
+export const ShimmerList = ({ count = 6 }: ShimmerListProps) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {Array.from({ length: count }).map((_, i) => (
       <ShimmerCard key={i} />
@@ -29,7 +30,7 @@ export const ShimmerList = ({ count = 6 }: { count?: number }) => (
   </div>
 );
 
-export const ShimmerTable = ({ rows = 5 }: { rows?: number }) => (
+export const ShimmerTable = ({ rows = 5 }: ShimmerTableProps) => (
   <div className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
     <div className="p-4 border-b">
       <div className="h-6 bg-gray-200 rounded w-48"></div>

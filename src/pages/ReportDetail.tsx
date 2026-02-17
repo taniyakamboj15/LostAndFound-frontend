@@ -1,6 +1,6 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import BackButton from '@components/ui/BackButton';
 import { 
-  ChevronLeft,
   MapPin,
   Calendar,
   User,
@@ -35,13 +35,7 @@ const ReportDetail = () => {
     <ComponentErrorBoundary title="Report Detail Error">
       <div className="space-y-6">
         {/* Back Button */}
-        <Link to="/reports">
-          <Button variant="ghost" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Reports
-          </Button>
-        </Link>
-
+        <BackButton label="Back to Reports" />
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -104,7 +98,7 @@ const ReportDetail = () => {
               {(report.matches?.length || 0) > 0 ? (
                 <div className="space-y-4">
                   {(report.matches as unknown as Match[])?.map((match: Match) => {
-                    const confidenceBadge = getConfidenceBadge(match.confidence);
+                    const confidenceBadge = getConfidenceBadge(match.confidenceScore);
                     return (
                       <div
                         key={match._id}
@@ -116,55 +110,65 @@ const ReportDetail = () => {
                               {confidenceBadge.label}
                             </Badge>
                             <span className="text-sm text-gray-600">
-                              {(match.confidence * 100).toFixed(0)}% confidence
+                              {(match.confidenceScore * 100).toFixed(0)}% confidence
                             </span>
                           </div>
                         </div>
 
                         <h3 className="font-semibold text-gray-900 mb-2">
-                          {match.item.description}
+                          {match.itemId?.description || 'Item description unavailable'}
                         </h3>
 
                         <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-3">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 flex-shrink-0" />
-                            <span>{match.item.locationFound}</span>
+                            <span>{match.itemId?.locationFound || 'Unknown Location'}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 flex-shrink-0" />
-                            <span>Found {formatDate(match.item.dateFound)}</span>
+                            <span>
+                              {match.itemId?.dateFound 
+                                ? `Found ${formatDate(match.itemId.dateFound)}` 
+                                : 'Unknown Date'}
+                            </span>
                           </div>
                         </div>
 
-                        <div className="mb-3">
-                          <p className="text-sm font-medium text-gray-700 mb-1">
-                            Match Reasons:
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {match.reasons.map((reason: string, idx: number) => (
-                              <span
-                                key={idx}
-                                className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded"
-                              >
-                                {reason}
-                              </span>
-                            ))}
+                        {match.reasons && match.reasons.length > 0 && (
+                          <div className="mb-3">
+                            <p className="text-sm font-medium text-gray-700 mb-1">
+                              Match Reasons:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {match.reasons.map((reason: string, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded"
+                                >
+                                  {reason}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         <div className="flex gap-2">
-                          <Link to={`/items/${match.item._id}`}>
-                            <Button variant="outline" size="sm">
-                              View Item
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => navigate(`/claims/create?itemId=${match.item._id}`)}
-                          >
-                            File Claim
-                          </Button>
+                          {match.itemId && (
+                            <>
+                              <Link to={`/items/${match.itemId._id}`}>
+                                <Button variant="outline" size="sm">
+                                  View Item
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => match.itemId && navigate(`/claims/create?itemId=${match.itemId._id}`)}
+                              >
+                                File Claim
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     );

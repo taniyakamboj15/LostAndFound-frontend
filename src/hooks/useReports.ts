@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { reportService } from '@services/report.service';
 import { useAuth } from './useAuth';
 import { useToast } from './useToast';
+import { useDebounce } from './useDebounce';
 import { getErrorMessage } from '@utils/errors';
 import { ItemCategory } from '@constants/categories';
 import type { LostReport, CreateLostReportData } from '../types/report.types';
@@ -18,9 +19,10 @@ export const useReportsList = (initialFilters: ReportFilters = {}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ReportFilters>(initialFilters);
+  const debouncedFilters = useDebounce(filters, 500);
   const toast = useToast();
 
-  const fetchReports = useCallback(async (currentFilters: ReportFilters = filters) => {
+  const fetchReports = useCallback(async (currentFilters: ReportFilters = debouncedFilters) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -40,16 +42,16 @@ export const useReportsList = (initialFilters: ReportFilters = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, toast]);
+  }, [debouncedFilters, toast, user?.role]);
 
   const updateFilters = useCallback((newFilters: ReportFilters) => {
     setFilters(newFilters);
-    fetchReports(newFilters);
-  }, [fetchReports]);
+    // Removed immediate fetchReports call
+  }, []);
 
   useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
+    fetchReports(debouncedFilters);
+  }, [debouncedFilters]); // Trigger fetch when debounced filters change
 
   return useMemo(() => ({
     reports,
@@ -72,8 +74,11 @@ export const useReportDetail = (id: string | null) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await reportService.getById(id);
-      setReport(response.data);
+      const [reportResponse, matchesResponse] = await Promise.all([
+        reportService.getById(id),
+        reportService.getMatches(id)
+      ]);
+      setReport({ ...reportResponse.data, matches: matchesResponse.data });
     } catch (err: unknown) {
       const message = getErrorMessage(err);
       setError(message);

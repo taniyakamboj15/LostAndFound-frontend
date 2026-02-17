@@ -6,8 +6,7 @@ import {
 import { useAuth } from '@hooks/useAuth';
 import { ROUTES } from '../../constants/routes';
 import { cn } from '@utils/helpers';
-
-
+import { PUBLIC_NAV_ITEMS, PROTECTED_NAV_ITEMS, STAFF_NAV_ITEMS, ADMIN_NAV_ITEMS } from '@constants/ui';
 
 const Navbar = () => {
   const location = useLocation();
@@ -17,12 +16,19 @@ const Navbar = () => {
     logout();
   };
 
+  const navItems = [
+    ...PUBLIC_NAV_ITEMS,
+    ...(isAuthenticated ? PROTECTED_NAV_ITEMS : []),
+    ...(isAdmin() || isStaff() ? STAFF_NAV_ITEMS : []),
+    ...(isAdmin() ? ADMIN_NAV_ITEMS : [])
+  ];
+
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to={isAuthenticated ? ROUTES.DASHBOARD : '/search'} className="flex items-center gap-2">
+          <Link to={isAuthenticated ? ROUTES.DASHBOARD : '/'} className="flex items-center gap-2">
             <Package className="h-8 w-8 text-primary-600" />
             <span className="text-xl font-bold text-gray-900">Lost & Found</span>
           </Link>
@@ -42,115 +48,21 @@ const Navbar = () => {
                 Dashboard
               </Link>
             )}
-            <Link
-              to="/search"
-              className={cn(
-                'px-4 py-2 rounded-lg transition-colors',
-                location.pathname === '/search'
-                  ? 'bg-primary-50 text-primary-700 font-medium'
-                  : 'text-gray-700 hover:bg-gray-100'
-              )}
-            >
-             Search Items
-            </Link>
             
-            {(isAdmin() || isStaff()) && (
+            {navItems.map((item) => (
               <Link
-                to="/items"
+                key={item.path}
+                to={item.path}
                 className={cn(
                   'px-4 py-2 rounded-lg transition-colors',
-                  location.pathname.startsWith('/items')
+                  location.pathname === item.path || (item.path === '/' && location.pathname === '/')
                     ? 'bg-primary-50 text-primary-700 font-medium'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}
               >
-                Items
+                {item.label}
               </Link>
-            )}
-
-            {isAuthenticated && (
-              <>
-                <Link
-                  to="/claims"
-                  className={cn(
-                    'px-4 py-2 rounded-lg transition-colors',
-                    location.pathname.startsWith('/claims')
-                      ? 'bg-primary-50 text-primary-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  )}
-                >
-                  Claims
-                </Link>
-
-                <Link
-                  to="/reports"
-                  className={cn(
-                    'px-4 py-2 rounded-lg transition-colors',
-                    location.pathname.startsWith('/reports')
-                      ? 'bg-primary-50 text-primary-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  )}
-                >
-                  Reports
-                </Link>
-              </>
-            )}
-
-            {(isAdmin() || isStaff() || isAuthenticated) && (
-              <>
-
-                <Link
-                  to="/pickups"
-                  className={cn(
-                    'px-4 py-2 rounded-lg transition-colors',
-                    location.pathname.startsWith('/pickups')
-                      ? 'bg-primary-50 text-primary-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  )}
-                >
-                  Pickups
-                </Link>
-                <Link
-                  to="/storage"
-                  className={cn(
-                    'px-4 py-2 rounded-lg transition-colors',
-                    location.pathname.startsWith('/storage')
-                      ? 'bg-primary-50 text-primary-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  )}
-                >
-                  Storage
-                </Link>
-
-                {isAdmin() && (
-                  <Link
-                    to="/analytics"
-                    className={cn(
-                      'px-4 py-2 rounded-lg transition-colors',
-                      location.pathname.startsWith('/analytics')
-                        ? 'bg-primary-50 text-primary-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    )}
-                  >
-                    Analytics
-                  </Link>
-                )}
-                
-                {isAdmin() && (
-                  <Link
-                    to={ROUTES.STAFF}
-                    className={cn(
-                      'px-4 py-2 rounded-lg transition-colors',
-                      location.pathname.startsWith('/admin/staff')
-                        ? 'bg-primary-50 text-primary-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    )}
-                  >
-                    Staff
-                  </Link>
-                )}
-              </>
-            )}
+            ))}
           </div>
 
           {/* User Menu */}

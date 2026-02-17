@@ -1,30 +1,21 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@components/ui';
+import { ERROR_UI_CONFIG } from '@constants/ui';
+import { ErrorBoundaryProps } from '@app-types/ui.types';
+import { ErrorBoundaryState } from '@constants/feedback';
 
-interface Props {
-  children?: ReactNode;
-  fallback?: ReactNode;
-  onReset?: () => void;
-}
-
-interface State {
-  hasError: boolean;
-  error: Error | null;
-}
-
-class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public state: ErrorBoundaryState = {
     hasError: false,
     error: null,
   };
 
-  public static getDerivedStateFromError(error: Error): State {
+  public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to an error reporting service
     console.error('Critical UI Error:', error, errorInfo);
   }
 
@@ -43,6 +34,8 @@ class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      const config = ERROR_UI_CONFIG.default;
+
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
           <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
@@ -50,19 +43,14 @@ class ErrorBoundary extends Component<Props, State> {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
                 <AlertTriangle className="w-8 h-8 text-red-600" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">
-                Something went wrong
-              </h1>
-              <p className="text-gray-600 mb-8">
-                An unexpected error occurred. Our team has been notified. 
-                Please try resetting the application or return home.
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-3">{config.title}</h1>
+              <p className="text-gray-600 mb-8">{config.message}</p>
               
-              <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-3">
                 <Button 
                   onClick={this.handleReset}
-                  className="flex items-center justify-center gap-2"
-                  variant="primary"
+                  fullWidth
+                  className="gap-2"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Try Again
@@ -70,7 +58,8 @@ class ErrorBoundary extends Component<Props, State> {
                 <Button 
                   onClick={() => window.location.href = '/'}
                   variant="outline"
-                  className="flex items-center justify-center gap-2"
+                  fullWidth
+                  className="gap-2"
                 >
                   <Home className="w-4 h-4" />
                   Return Home
@@ -79,9 +68,9 @@ class ErrorBoundary extends Component<Props, State> {
 
               {import.meta.env.DEV && this.state.error && (
                 <div className="mt-8 text-left">
-                  <p className="text-xs font-mono text-red-500 bg-red-50 p-3 rounded overflow-auto max-h-40">
-                    {this.state.error.toString()}
-                  </p>
+                  <pre className="text-xs font-mono text-red-500 bg-red-50 p-3 rounded overflow-auto max-h-40 whitespace-pre-wrap">
+                    {this.state.error.stack || this.state.error.toString()}
+                  </pre>
                 </div>
               )}
             </div>

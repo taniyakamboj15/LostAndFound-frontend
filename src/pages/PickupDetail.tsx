@@ -1,6 +1,6 @@
-import { useParams,  Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import BackButton from '@components/ui/BackButton';
 import { 
-  ChevronLeft,
   Calendar,
   Clock,
   MapPin,
@@ -68,13 +68,8 @@ const PickupDetail = () => {
     <ComponentErrorBoundary title="Pickup Detail Error">
       <div className="space-y-6">
         {/* Back Button */}
-        <Link to="/pickups">
-          <Button variant="ghost" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Pickups
-          </Button>
-        </Link>
-
+        {/* Back Button */}
+        <BackButton label="Back to Pickups" />
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>

@@ -1,39 +1,25 @@
-import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { Button, Modal } from '@components/ui';
-import api from '@services/api';
-import toast from 'react-hot-toast';
-import { Trash2, Gift, AlertTriangle } from 'lucide-react';
-
-interface DispositionActionsProps {
-  itemId: string;
-  onDispositionComplete: () => void;
-}
+import { DISPOSITION_UI_CONFIG } from '@constants/ui';
+import { DispositionType } from '@constants/status';
+import { useDisposition } from '@hooks/useDisposition';
+import { DispositionActionsProps } from '@app-types/ui.types';
 
 const DispositionActions = ({ itemId, onDispositionComplete }: DispositionActionsProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [type, setType] = useState<'DONATE' | 'AUCTION' | 'DISPOSE'>('DONATE');
-  const [recipient, setRecipient] = useState('');
-  const [notes, setNotes] = useState('');
+  const {
+    isModalOpen,
+    setIsModalOpen,
+    loading,
+    type,
+    setType,
+    recipient,
+    setRecipient,
+    notes,
+    setNotes,
+    handleDispose
+  } = useDisposition(itemId, onDispositionComplete);
 
-  const handleDispose = async () => {
-    try {
-      setLoading(true);
-      await api.post('/dispositions', {
-        itemId,
-        type,
-        recipient,
-        notes
-      });
-      toast.success('Item processed successfully');
-      setIsModalOpen(false);
-      onDispositionComplete();
-    } catch (error) {
-      toast.error('Failed to process item');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const currentConfig = DISPOSITION_UI_CONFIG[type];
 
   return (
     <>
@@ -58,37 +44,41 @@ const DispositionActions = ({ itemId, onDispositionComplete }: DispositionAction
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Disposition Type</label>
               <div className="grid grid-cols-3 gap-2">
-                <button
-                  className={`p-2 rounded border text-sm flex flex-col items-center justify-center gap-1 ${type === 'DONATE' ? 'bg-green-50 border-green-500 text-green-700' : 'border-gray-200'}`}
-                  onClick={() => setType('DONATE')}
-                >
-                  <Gift size={16} /> Donate
-                </button>
-                <button
-                  className={`p-2 rounded border text-sm flex flex-col items-center justify-center gap-1 ${type === 'AUCTION' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-200'}`}
-                  onClick={() => setType('AUCTION')}
-                >
-                  <span className="font-bold">$</span> Auction
-                </button>
-                <button
-                  className={`p-2 rounded border text-sm flex flex-col items-center justify-center gap-1 ${type === 'DISPOSE' ? 'bg-red-50 border-red-500 text-red-700' : 'border-gray-200'}`}
-                  onClick={() => setType('DISPOSE')}
-                >
-                  <Trash2 size={16} /> Dispose
-                </button>
+                {(Object.entries(DISPOSITION_UI_CONFIG) as [DispositionType, typeof currentConfig][]).map(([key, config]) => {
+                  const Icon = config.icon;
+                  const isActive = type === key;
+                  return (
+                    <button
+                      key={key}
+                      className={`p-2 rounded border text-sm flex flex-col items-center justify-center gap-1 transition-colors ${
+                        isActive ? config.colorClass : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setType(key)}
+                    >
+                      <Icon size={16} /> {config.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {type === 'DONATE' ? 'Charity / Recipient' : type === 'AUCTION' ? 'Auction House / url' : 'Disposal Method'}
+                {(() => {
+                  const labels = {
+                    [DispositionType.DONATE]: 'Charity / Recipient',
+                    [DispositionType.AUCTION]: 'Auction House / URL',
+                    [DispositionType.DISPOSE]: 'Disposal Method'
+                  };
+                  return labels[type];
+                })()}
               </label>
               <input
                 type="text"
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                placeholder={type === 'DONATE' ? 'e.g. Goodwill' : 'e.g. Incinerator'}
+                placeholder={currentConfig.placeholder}
               />
             </div>
 
@@ -105,7 +95,7 @@ const DispositionActions = ({ itemId, onDispositionComplete }: DispositionAction
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
               <Button onClick={handleDispose} isLoading={loading} variant="primary">
-                Confirm {type}
+                Confirm {currentConfig.label}
               </Button>
             </div>
           </div>

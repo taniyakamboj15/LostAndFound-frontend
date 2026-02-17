@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Upload, X, ChevronLeft } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
+import BackButton from '@components/ui/BackButton';
 import { Button, Input, Select, Textarea, Card, Spinner } from '@components/ui';
 import { editItemSchema } from '@validators';
 import { ItemCategory, ITEM_CATEGORIES } from '@constants/categories';
@@ -132,11 +133,8 @@ const EditItem = () => {
     <ComponentErrorBoundary title="Edit Item Error">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Back Button */}
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/items/${id}`)}>
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to Item
-        </Button>
-
+        {/* Back Button */}
+        <BackButton label="Back to Item" />
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Edit Item</h1>

@@ -8,7 +8,7 @@ export interface Match {
     photos: Array<{ path: string }>;
     locationFound: string;
     dateFound: string;
-  };
+  } | null; // Can be null if item is deleted
   lostReportId: {
     _id: string;
     category: string;
@@ -16,19 +16,12 @@ export interface Match {
     locationLost: string;
     dateLost: string;
   };
-  confidence: number;
   confidenceScore: number;
   categoryScore: number;
   keywordScore: number;
   dateScore: number;
   locationScore: number;
-  item: {
-    _id: string;
-    description: string;
-    locationFound: string;
-    dateFound: string;
-  };
-  reasons: string[];
+  reasons?: string[];
   notified: boolean;
   createdAt: string;
 }

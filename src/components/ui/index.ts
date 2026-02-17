@@ -9,11 +9,16 @@ export { default as Spinner } from './Spinner';
 export { PageLoader, ShimmerCard, ShimmerList, ShimmerTable, ShimmerDetail } from './Shimmer';
 export { default as Modal } from './Modal';
 
-export type { ButtonProps } from './Button';
-export type { InputProps } from './Input';
-export type { SelectProps } from './Select';
-export type { TextareaProps } from './Textarea';
-export type { CardProps } from './Card';
-export type { BadgeProps } from './Badge';
-export type { SpinnerProps } from './Spinner';
-export type { ModalProps } from './Modal';
+export type { 
+  ButtonProps, 
+  InputProps, 
+  SelectProps, 
+  TextareaProps, 
+  CardProps, 
+  BadgeProps, 
+  SpinnerProps, 
+  ModalProps,
+  ShimmerCardProps,
+  ShimmerListProps,
+  ShimmerTableProps
+} from '@app-types/ui.types';

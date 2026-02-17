@@ -1,3 +1,5 @@
+import { BadgeVariant } from '@app-types/ui.types';
+
 // Item Status
 export enum ItemStatus {
   AVAILABLE = 'AVAILABLE',
@@ -67,22 +69,22 @@ export const DISPOSITION_TYPE_LABELS: Record<DispositionType, string> = {
 };
 
 // Combined Item Status Info (for easy access in components)
-export const ITEM_STATUS: Record<ItemStatus, { label: string; color: string }> = {
+export const ITEM_STATUS: Record<ItemStatus, { label: string; variant: BadgeVariant }> = {
   [ItemStatus.AVAILABLE]: {
     label: ITEM_STATUS_LABELS[ItemStatus.AVAILABLE],
-    color: 'green',
+    variant: 'success',
   },
   [ItemStatus.CLAIMED]: {
     label: ITEM_STATUS_LABELS[ItemStatus.CLAIMED],
-    color: 'yellow',
+    variant: 'warning',
   },
   [ItemStatus.RETURNED]: {
     label: ITEM_STATUS_LABELS[ItemStatus.RETURNED],
-    color: 'blue',
+    variant: 'info',
   },
   [ItemStatus.DISPOSED]: {
     label: ITEM_STATUS_LABELS[ItemStatus.DISPOSED],
-    color: 'gray',
+    variant: 'default',
   },
 };
 

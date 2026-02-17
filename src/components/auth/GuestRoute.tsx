@@ -1,11 +1,7 @@
-import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
 import { Spinner } from '@components/ui';
-
-interface GuestRouteProps {
-  children: React.ReactNode;
-}
+import { GuestRouteProps } from '@app-types/ui.types';
 
 const GuestRoute = ({ children }: GuestRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();

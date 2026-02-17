@@ -1,17 +1,16 @@
-import { useMemo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, User, Package } from 'lucide-react';
-import { Card, Button, Badge, Spinner } from '@components/ui';
-import { formatDate } from '@utils/formatters';
+import { useState } from 'react';
+import { Calendar } from 'lucide-react';
+import { Card, Button, Spinner } from '@components/ui';
 import { usePickups } from '@hooks/usePickups';
 import ScanPickupModal from '@components/claims/ScanPickupModal';
-import { useAuth } from '@hooks/useAuth';
 import { usePickupVerification } from '@hooks/usePickupVerification';
+import PickupsHeader from '@components/pickups/PickupsHeader';
+import PickupCard from '@components/pickups/PickupCard';
+import CalendarView from '@components/pickups/CalendarView';
 
 const PickupsList = () => {
   const { pickups, isLoading, error } = usePickups();
-  const {user } = useAuth();
-  
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   const {
     isScanModalOpen,
@@ -20,75 +19,10 @@ const PickupsList = () => {
     handleVerifySuccess
   } = usePickupVerification();
 
-  const getStatusBadge = useCallback((isCompleted: boolean) => {
-    if (isCompleted) return { variant: 'success' as const, label: 'Completed' };
-    return { variant: 'info' as const, label: 'Scheduled' };
-  }, []);
-
-  const renderedPickups = useMemo(() => {
-    return pickups.map((pickup) => {
-      const statusBadge = getStatusBadge(pickup.isCompleted);
-      return (
-        <Link key={pickup._id} to={`/pickups/${pickup._id}`}>
-          <Card hover padding="sm">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <Badge variant={statusBadge.variant}>
-                    {statusBadge.label}
-                  </Badge>
-                </div>
-
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {pickup.itemId?.description || pickup.claimId?.itemId?.description || 'Item Handoff'}
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <User className="h-4 w-4 flex-shrink-0" />
-                    <span>{pickup.claimantId?.name || 'Unknown Claimant'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="h-4 w-4 flex-shrink-0" />
-                    <span>{formatDate(pickup.pickupDate)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Clock className="h-4 w-4 flex-shrink-0" />
-                    <span>{pickup.startTime} - {pickup.endTime}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="h-4 w-4 flex-shrink-0" />
-                    <span>Main Office</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="ml-4">
-                <Package className="h-6 w-6 text-gray-400" />
-              </div>
-            </div>
-          </Card>
-        </Link>
-      );
-    });
-  }, [pickups, getStatusBadge]);
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pickup Schedule</h1>
-          <p className="text-gray-600 mt-1">Manage item pickup appointments</p>
-        </div>
-        {/* Verify Button - Explicit Role Check */}
-        {user && ['staff', 'admin'].includes(user.role) && (
-          <Button variant="primary" onClick={openScanModal}>
-            <Package className="h-4 w-4 mr-2" />
-            Verify Pickup
-          </Button>
-        )}
-      </div>
+      <PickupsHeader onVerifyClick={openScanModal} />
 
       <ScanPickupModal
         isOpen={isScanModalOpen}
@@ -96,16 +30,26 @@ const PickupsList = () => {
         onVerifySuccess={handleVerifySuccess}
       />
 
-      {/* Calendar View Placeholder */}
+      {/* Calendar/List View Toggle */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Upcoming Pickups</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {viewMode === 'list' ? 'Upcoming Pickups' : 'Calendar'}
+          </h2>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm">
+            <Button 
+                variant={viewMode === 'calendar' ? 'secondary' : 'ghost'} 
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+            >
               <Calendar className="h-4 w-4 mr-2" />
               Calendar View
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button 
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
+                size="sm"
+                onClick={() => setViewMode('list')}
+            >
               List View
             </Button>
           </div>
@@ -121,7 +65,15 @@ const PickupsList = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {renderedPickups}
+            {viewMode === 'list' ? (
+              <div className="grid grid-cols-1 gap-4">
+                {pickups.map(pickup => (
+                  <PickupCard key={pickup._id} pickup={pickup} />
+                ))}
+              </div>
+            ) : (
+              <CalendarView pickups={pickups} />
+            )}
           </div>
         )}
 
@@ -142,3 +94,5 @@ const PickupsList = () => {
 };
 
 export default PickupsList;
+
+

@@ -1,12 +1,7 @@
-import { InputHTMLAttributes, forwardRef } from 'react';
+import { forwardRef } from 'react';
+import { InputProps } from '@app-types/ui.types';
 import { cn } from '@utils/helpers';
-
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  fullWidth?: boolean;
-}
+import { INPUT_ERROR_STYLES } from '@constants/ui';
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
@@ -41,9 +36,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             'px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-400',
             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
             'disabled:bg-gray-100 disabled:cursor-not-allowed',
-            error
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-gray-300',
+            INPUT_ERROR_STYLES[String(!!error) as keyof typeof INPUT_ERROR_STYLES],
             fullWidth && 'w-full',
             className
           )}

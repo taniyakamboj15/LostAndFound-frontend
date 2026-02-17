@@ -1,57 +1,33 @@
-import { useState } from 'react';
-import { getErrorMessage } from '@utils/errors';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, Upload, X, ShieldCheck } from 'lucide-react';
 import { Button, Card, Select } from '@components/ui';
-import { useToast } from '@hooks/useToast';
-import { claimService } from '@services/claim.service';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { cn } from '@utils/helpers';
-import { usePhotoUpload } from '@hooks/usePhotoUpload';
+import { PROOF_DOCUMENT_TYPES } from '@constants/feedback';
+import { useParams } from 'react-router-dom';
+import { useProofUpload } from '@hooks/useProofUpload';
 
 const UploadProof = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const toast = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [proofType, setProofType] = useState('GOVERNMENT_ID');
-  /* Hook logic replacement */
-  const { 
-    photos: files, 
-    handlePhotoChange, 
-    removePhoto 
-  } = usePhotoUpload({
-    maxPhotos: 5,
-    maxSizeMB: 10,
-    acceptedTypes: ['image/jpeg', 'image/png', 'application/pdf']
-  });
+  
+  if (!id) {
+    return null;
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id) return;
-    if (files.length === 0) {
-      toast.error('Please select at least one document');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await claimService.uploadProof(id, {
-        type: proofType,
-        files: files,
-      });
-      toast.success('Proof documents uploaded successfully');
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    proofType,
+    setProofType,
+    files,
+    handlePhotoChange,
+    removePhoto,
+    handleSubmit,
+    handleCancel,
+    isSubmitting,
+  } = useProofUpload({ claimId: id });
 
   return (
     <ComponentErrorBoundary title="Upload Proof Error">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Back Button */}
         <Link to={`/claims/${id}`}>
           <Button variant="ghost" size="sm">
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -59,7 +35,6 @@ const UploadProof = () => {
           </Button>
         </Link>
 
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Upload Proof</h1>
           <p className="text-gray-600 mt-1">
@@ -74,13 +49,7 @@ const UploadProof = () => {
                 label="Document Type"
                 value={proofType}
                 onChange={(e) => setProofType(e.target.value)}
-                options={[
-                  { value: 'GOVERNMENT_ID', label: 'Government ID (Passport, Driver License)' },
-                  { value: 'INVOICE', label: 'Purchase Invoice / Receipt' },
-                  { value: 'PHOTO', label: 'Photo Verification' },
-                  { value: 'OWNERSHIP_PROOF', label: 'Other Proof of Ownership' },
-                  { value: 'OTHER', label: 'Other Document' },
-                ]}
+                options={PROOF_DOCUMENT_TYPES}
                 fullWidth
                 required
               />
@@ -92,7 +61,6 @@ const UploadProof = () => {
                 </p>
               </div>
 
-              {/* Upload Dropzone */}
               <div>
                 <label
                   htmlFor="proof-upload"
@@ -121,7 +89,6 @@ const UploadProof = () => {
                 </label>
               </div>
 
-              {/* File List */}
               {files.length > 0 && (
                 <div className="space-y-2 mt-4">
                   <p className="text-sm font-medium text-gray-700">Selected Files:</p>
@@ -154,7 +121,7 @@ const UploadProof = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate(`/claims/${id}`)}
+              onClick={handleCancel}
               fullWidth
               disabled={isSubmitting}
             >

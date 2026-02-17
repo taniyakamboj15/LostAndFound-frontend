@@ -1,17 +1,9 @@
-import { ReactNode, useEffect } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { ModalProps } from '@app-types/ui.types';
 import { cn } from '@utils/helpers';
-
-
-export interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  showCloseButton?: boolean;
-}
+import { MODAL_SIZES } from '@constants/ui';
 
 const Modal = ({
   isOpen,
@@ -46,13 +38,6 @@ const Modal = ({
 
   if (!isOpen) return null;
 
-  const sizeStyles = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-  };
-
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -65,7 +50,7 @@ const Modal = ({
       <div
         className={cn(
           'relative bg-white rounded-lg shadow-xl w-full',
-          sizeStyles[size],
+          MODAL_SIZES[size],
           'max-h-[90vh] overflow-y-auto custom-scrollbar'
         )}
       >

@@ -2,7 +2,7 @@
 export const ROUTES = {
   // Public
   HOME: '/',
-  SEARCH: '/search',
+  // SEARCH: '/search', // Removed
   
   // Auth
   LOGIN: '/login',

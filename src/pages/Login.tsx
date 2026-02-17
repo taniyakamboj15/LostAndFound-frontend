@@ -8,12 +8,8 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { loginUser } from '../store/slices/authSlice';
 import { useToast } from '../hooks/useToast';
 import { ROUTES } from '../constants/routes';
+import { LoginFormData } from '../types/login.types';
 
-interface LoginFormData {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
 
 const Login = () => {
   const navigate = useNavigate();

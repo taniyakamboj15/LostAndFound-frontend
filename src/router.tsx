@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { ROUTES } from './constants/routes';
 
@@ -55,7 +55,7 @@ import {
   usersAction,
   storageAction,
 } from './actions';
-import ErrorBoundary from '@components/feedback/ErrorBoundary';
+import RouterErrorBoundary from '@components/feedback/RouterErrorBoundary';
 import { PageLoader, ShimmerList, ShimmerDetail } from '@components/ui';
 
 import { ReactNode } from 'react';
@@ -76,11 +76,11 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouterErrorBoundary />,
     children: [
       {
         index: true,
-        element: <Navigate to={ROUTES.SEARCH} replace />,
+        element: <SuspenseWrapper><PublicSearch /></SuspenseWrapper>,
       },
       {
         path: ROUTES.DASHBOARD,
@@ -104,7 +104,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/items/:id',
-        element: <SuspenseWrapper fallback={<ShimmerDetail />}><ProtectedRoute><ItemDetail /></ProtectedRoute></SuspenseWrapper>,
+        element: <SuspenseWrapper fallback={<ShimmerDetail />}><ItemDetail /></SuspenseWrapper>,
         loader: itemDetailLoader,
       },
       {
@@ -186,16 +186,6 @@ export const router = createBrowserRouter([
       {
         path: 'verify-email',
         element: <VerifyEmail />,
-      },
-    ],
-  },
-  {
-    path: ROUTES.SEARCH,
-    element: <MainLayout />,
-    children: [
-      {
-        index: true,
-        element: <PublicSearch />,
       },
     ],
   },

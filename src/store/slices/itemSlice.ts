@@ -1,16 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { itemService } from '../../services';
-import type { Item, ItemFilters, PaginationMeta, CreateItemData, UpdateItemData } from '../../types';
+import type { ItemFilters,  CreateItemData, UpdateItemData } from '../../types';
+import type { ItemState } from '../../types/authSlice.types';
 
-// State interface
-interface ItemState {
-  items: Item[];
-  selectedItem: Item | null;
-  filters: ItemFilters;
-  pagination: PaginationMeta;
-  isLoading: boolean;
-  error: string | null;
-}
 
 // Initial state
 const initialState: ItemState = {

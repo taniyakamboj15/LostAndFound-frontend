@@ -2,15 +2,11 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, MapPin, Calendar } from 'lucide-react';
 import { Card, Badge } from '@components/ui';
-import type { Item } from '../../types/item.types';
+import { ItemCardProps } from '@app-types/ui.types';
 import { ITEM_CATEGORIES } from '@constants/categories';
 import { ITEM_STATUS } from '@constants/status';
 import { formatDate } from '@utils/formatters';
 import { getItemImageUrl } from '@utils/image';
-
-interface ItemCardProps {
-  item: Item;
-}
 
 const ItemCard = memo(({ item }: ItemCardProps) => {
   return (
@@ -34,7 +30,7 @@ const ItemCard = memo(({ item }: ItemCardProps) => {
               <Badge variant="info">
                 {ITEM_CATEGORIES[item.category].label}
               </Badge>
-              <Badge variant={ITEM_STATUS[item.status].color as "success" | "warning" | "info" | "danger" | "default"}>
+              <Badge variant={ITEM_STATUS[item.status].variant}>
                 {ITEM_STATUS[item.status].label}
               </Badge>
             </div>

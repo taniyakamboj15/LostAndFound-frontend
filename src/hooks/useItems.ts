@@ -1,11 +1,14 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { itemService } from '@services/item.service';
 import { useToast } from './useToast';
+import { useDebounce } from './useDebounce';
 import { getErrorMessage } from '@utils/errors';
 import type { Item, ItemFilters as ServiceItemFilters, CreateItemData, UpdateItemData } from '../types/item.types';
 
 import { AdminItemFilters } from '../types/ui.types';
+import { ItemCategory } from '@constants/categories';
+import { ItemStatus } from '@constants/status';
 
 export const useItemDetail = (id: string | null) => {
   const [item, setItem] = useState<Item | null>(null);
@@ -41,36 +44,74 @@ export const useItemDetail = (id: string | null) => {
   }), [item, isLoading, error, fetchItem]);
 };
 
-export const useItemsList = (initialFilters: AdminItemFilters = { keyword: '', category: '', status: '' }) => {
+export const useItemsList = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const toast = useToast();
+  
+  // Memoized initial filters to avoid recreation
+  const initialFilters = useMemo<AdminItemFilters>(() => ({
+    keyword: searchParams.get('keyword') || '',
+    category: (searchParams.get('category') as ItemCategory) || '',
+    status: (searchParams.get('status') as ItemStatus) || '',
+  }), []); // Only on mount
+
   const [items, setItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Initial load true
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminItemFilters>(initialFilters);
-  const toast = useToast();
+  const debouncedFilters = useDebounce(filters, 500);
+  
+  // Track active requests to avoid race conditions
+  const requestCount = useRef(0);
 
-  const fetchItems = useCallback(async (currentFilters: AdminItemFilters = filters) => {
+  const fetchItems = useCallback(async (currentFilters: AdminItemFilters) => {
+    const requestId = ++requestCount.current;
     setIsLoading(true);
     setError(null);
-    try {
-      const response = await itemService.getItems(currentFilters as unknown as ServiceItemFilters);
-      setItems(response.data);
-    } catch (err: unknown) {
-      const message = getErrorMessage(err);
-      setError(message);
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters, toast]);
 
+    try {
+      // Clean up filters: remove empty strings
+      const cleanFilters: ServiceItemFilters = {};
+      if (currentFilters.keyword) cleanFilters.keyword = currentFilters.keyword;
+      if (currentFilters.category) cleanFilters.category = currentFilters.category as ItemCategory;
+      if (currentFilters.status) cleanFilters.status = currentFilters.status as ItemStatus;
+
+      const response = await itemService.getItems(cleanFilters);
+      
+      // Only update if this is still the latest request
+      if (requestId === requestCount.current) {
+        setItems(response.data);
+      }
+    } catch (err: unknown) {
+      if (requestId === requestCount.current) {
+        const message = getErrorMessage(err);
+        setError(message);
+        toast.error(message);
+      }
+    } finally {
+      if (requestId === requestCount.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [toast]);
+
+  // Sync URL search params when filters change
   const updateFilters = useCallback((newFilters: AdminItemFilters) => {
     setFilters(newFilters);
-    fetchItems(newFilters);
-  }, [fetchItems]);
+    setIsLoading(true); // Immediate visual feedback that we're working
 
+    const newParams = new URLSearchParams();
+    if (newFilters.keyword) newParams.set('keyword', newFilters.keyword);
+    if (newFilters.category) newParams.set('category', newFilters.category);
+    if (newFilters.status) newParams.set('status', newFilters.status);
+    
+    setSearchParams(newParams, { replace: true });
+  }, [setSearchParams]);
+
+  // Fetch when debounced filters change
   useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+    fetchItems(debouncedFilters);
+  }, [debouncedFilters, fetchItems]);
 
   return useMemo(() => ({
     items,
@@ -78,7 +119,7 @@ export const useItemsList = (initialFilters: AdminItemFilters = { keyword: '', c
     error,
     filters,
     updateFilters,
-    refresh: fetchItems,
+    refresh: () => fetchItems(filters),
   }), [items, isLoading, error, filters, updateFilters, fetchItems]);
 };
 export const useCreateItem = () => {

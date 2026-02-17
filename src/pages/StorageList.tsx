@@ -136,7 +136,7 @@ const StorageList = () => {
                       <span>{location.location}</span>
                     </div>
                   </div>
-                  <Badge variant={statusConfig.variant as any}>{statusConfig.label}</Badge>
+                  <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
                 </div>
 
                 {/* Location Details */}

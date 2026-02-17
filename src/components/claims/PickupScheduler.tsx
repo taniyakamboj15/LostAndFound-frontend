@@ -1,63 +1,26 @@
-import { useState, useEffect } from 'react';
 import { Card, Button, Spinner } from '@components/ui';
 import { format } from 'date-fns';
-import { pickupService } from '@services/pickup.service';
-import { useToast } from '@hooks/useToast';
+import { usePickupManagement } from '@hooks/usePickupManagement';
+import { PICKUP_SLOT_VARIANT_MAP } from '@constants/ui';
 import { PickupSlot } from '../../types/pickup.types';
-
-interface PickupSchedulerProps {
-  claimId: string;
-  onScheduled: () => void;
-}
+import { PickupSchedulerProps } from '@app-types/ui.types';
 
 const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
-  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
-  const [slots, setSlots] = useState<PickupSlot[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<PickupSlot | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const toast = useToast();
+  const {
+    selectedDate,
+    setSelectedDate,
+    slots,
+    loading,
+    selectedSlot,
+    setSelectedSlot,
+    submitting,
+    bookPickup
+  } = usePickupManagement(claimId);
 
-  useEffect(() => {
-    fetchSlots();
-  }, [selectedDate]);
-
-  const fetchSlots = async () => {
-    try {
-      setLoading(true);
-      setSelectedSlot(null);
-      const res = await pickupService.getAvailableSlots(selectedDate);
-      if (res.success) {
-        setSlots(res.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch slots", error);
-      setSlots([]);
-      toast.error('Failed to load slots');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBook = async () => {
-    if (!selectedSlot) return;
-    
-    try {
-      setSubmitting(true);
-      await pickupService.book({
-        claimId,
-        pickupDate: selectedDate,
-        startTime: selectedSlot.startTime,
-        endTime: selectedSlot.endTime
-      });
-      toast.success('Pickup scheduled successfully!');
-      onScheduled();
-    } catch (error) {
-      // Error is handled by service/interceptor usually, or we can show generic
-      toast.error('Failed to book pickup');
-    } finally {
-      setSubmitting(false);
-    }
+  const getSlotStyles = (slot: PickupSlot) => {
+    if (selectedSlot === slot) return PICKUP_SLOT_VARIANT_MAP.selected;
+    if (slot.available) return PICKUP_SLOT_VARIANT_MAP.available;
+    return PICKUP_SLOT_VARIANT_MAP.unavailable;
   };
 
   return (
@@ -92,13 +55,7 @@ const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
                 key={idx}
                 disabled={!slot.available}
                 onClick={() => setSelectedSlot(slot)}
-                className={`p-2 text-xs font-medium rounded-md border transition-colors ${
-                  selectedSlot === slot 
-                    ? 'bg-primary-600 text-white border-primary-600'
-                    : slot.available 
-                      ? 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                      : 'bg-gray-50 text-gray-400 cursor-not-allowed border-gray-200'
-                }`}
+                className={`p-2 text-xs font-medium rounded-md border transition-colors ${getSlotStyles(slot)}`}
               >
                 {slot.startTime}
               </button>
@@ -111,7 +68,7 @@ const PickupScheduler = ({ claimId, onScheduled }: PickupSchedulerProps) => {
         fullWidth 
         disabled={!selectedSlot} 
         isLoading={submitting}
-        onClick={handleBook}
+        onClick={() => bookPickup(onScheduled)}
         variant="primary"
       >
         Confirm Booking

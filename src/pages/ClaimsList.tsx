@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, Filter, FileText, Calendar, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Card, Input, Button, Badge, Select, Spinner } from '@components/ui';
 import { ClaimStatus, CLAIM_STATUS_LABELS } from '@constants/status';
-import { CLAIM_STATUS_BADGE_MAP } from '@constants/ui';
+import { CLAIM_STATUS_VARIANT_MAP } from '@constants/ui';
 import { formatRelativeTime } from '@utils/formatters';
 import { useClaimsList } from '@hooks/useClaims';
 import { ComponentErrorBoundary } from '@components/feedback';
@@ -28,7 +28,7 @@ const ClaimsList = () => {
   }, [filters, refresh]);
 
   const getStatusBadgeVariant = (status: ClaimStatus) => {
-    return CLAIM_STATUS_BADGE_MAP[status as keyof typeof CLAIM_STATUS_BADGE_MAP] || 'default';
+    return CLAIM_STATUS_VARIANT_MAP[status as keyof typeof CLAIM_STATUS_VARIANT_MAP] || 'default';
   };
 
   return (

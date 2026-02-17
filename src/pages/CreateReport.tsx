@@ -1,46 +1,65 @@
 import { InfoIcon } from '@assets/svg';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { useForm, useFieldArray, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Input, Select, Textarea, Card } from '@components/ui';
 import { lostReportSchema } from '../validators';
-import {  ITEM_CATEGORIES } from '@constants/categories';
+import { ITEM_CATEGORIES } from '@constants/categories';
 import { useCreateReport } from '@hooks/useReports';
 import { useAuth } from '@hooks/useAuth';
 import { ComponentErrorBoundary } from '@components/feedback';
-import { useEffect } from 'react';
 import { CreateReportFormData } from '../types/createReport.types';
+import { CreateLostReportData } from '../types/report.types';
+
+// Senior Dev Practice: Define form-specific values for better useFieldArray compatibility
+interface CreateReportFormValues extends Omit<CreateReportFormData, 'identifyingFeatures' | 'dateLost'> {
+  dateLost: string; // HTML input[type="date"] returns string
+  identifyingFeatures: { text: string }[];
+}
+
+// Senior Dev Practice: Refine schema for the specific form structure
+const createReportFormSchema = lostReportSchema.shape({
+  identifyingFeatures: yup.array().of(
+    yup.object({
+      text: yup.string().min(3, 'Feature must be at least 3 characters').required()
+    })
+  ).min(1, 'At least one identifying feature is required').required()
+});
 
 const CreateReport = () => {
   const navigate = useNavigate();
   const { createReport, isSubmitting } = useCreateReport();
-
   const { user } = useAuth();
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
-  } = useForm<CreateReportFormData>({
-    resolver: yupResolver(lostReportSchema),
+  } = useForm<CreateReportFormValues>({
+    resolver: yupResolver(createReportFormSchema) as unknown as Resolver<CreateReportFormValues>,
     defaultValues: {
       identifyingFeatures: [],
       contactEmail: user?.email || '',
+      dateLost: new Date().toISOString().split('T')[0],
     }
   });
 
-  // Debug errors
-  useEffect(() => {
-    if (Object.keys(errors).length > 0) {
-      console.log('Form validation errors:', errors);
-    }
-  }, [errors]);
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'identifyingFeatures',
+  });
 
-  const onSubmit = async (data: CreateReportFormData) => {
-    await createReport({
+  const onSubmit = async (data: CreateReportFormValues) => {
+    const submissionData: CreateLostReportData = {
       ...data,
-      dateLost: data.dateLost instanceof Date ? data.dateLost.toISOString() : data.dateLost,
-    });
+      dateLost: new Date(data.dateLost).toISOString(),
+      identifyingFeatures: data.identifyingFeatures.map(f => f.text),
+      category: data.category,
+    };
+
+    await createReport(submissionData);
   };
 
   return (
@@ -144,6 +163,74 @@ const CreateReport = () => {
                 fullWidth
                 {...register('contactPhone')}
               />
+            </div>
+          </Card>
+
+          {/* Identifying Features */}
+          <Card>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Identifying Features
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Add specific details that help identify your item (e.g., "scratch on back", "sticker on lid").
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                 <Input
+                    id="feature-input"
+                    placeholder="Enter a feature and press Add"
+                    fullWidth
+                    onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const input = e.currentTarget;
+                        const value = input.value.trim();
+                        if (value) {
+                          append({ text: value });
+                          input.value = '';
+                        }
+                      }
+                    }}
+                 />
+                 <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                       const input = document.getElementById('feature-input') as HTMLInputElement;
+                       const value = input.value.trim();
+                       if (value) {
+                          append({ text: value });
+                          input.value = '';
+                       }
+                    }}
+                 >
+                    Add
+                 </Button>
+              </div>
+              
+              {errors.identifyingFeatures && (
+                <p className="text-sm text-red-600">{errors.identifyingFeatures.message}</p>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2">
+                    <span className="text-sm text-gray-700">{field.text}</span>
+                    <button
+                      type="button"
+                      onClick={() => remove(index)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      title="Remove feature"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+                {fields.length === 0 && (
+                   <p className="text-sm text-gray-500 italic">No features added yet. Please add at least one.</p>
+                )}
+              </div>
             </div>
           </Card>
 

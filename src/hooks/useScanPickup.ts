@@ -19,14 +19,14 @@ export const useScanPickup = (isOpen: boolean, onVerifySuccess: (pickupData: Pic
 
     let referenceCode = codeInput;
 
-    // Try to parse as JSON if it looks like one (from QR code)
+
     try {
       const parsed = JSON.parse(codeInput);
       if (parsed.referenceCode) {
         referenceCode = parsed.referenceCode;
       }
     } catch (e) {
-      // Not JSON, treat as raw reference code
+      
     }
 
     try {

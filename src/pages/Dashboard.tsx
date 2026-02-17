@@ -212,12 +212,12 @@ const Dashboard = () => {
                   </Link>
                 </>
               )}
-              <Link to={ROUTES.SEARCH} className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors text-left block">
+              <Link to={ROUTES.HOME} className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors text-left block">
                 <CheckCircle className="h-6 w-6 text-green-600 mb-2" />
                 <p className="font-medium text-gray-900">Search Items</p>
                 <p className="text-xs text-gray-600 mt-1">Find lost items</p>
               </Link>
-              <Link to="/reports/create" className="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors text-left block">
+              <Link to={ROUTES.LOST_REPORT} className="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors text-left block">
                 <AlertCircle className="h-6 w-6 text-orange-600 mb-2" />
                 <p className="font-medium text-gray-900">Report Lost</p>
                 <p className="text-xs text-gray-600 mt-1">Submit report</p>

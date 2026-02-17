@@ -1,13 +1,6 @@
-import { SelectHTMLAttributes, forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { cn } from '@utils/helpers';
-
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  fullWidth?: boolean;
-  options: Array<{ value: string; label: string }>;
-}
+import { SelectProps } from '@constants/ui';
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (
@@ -40,7 +33,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={cn(
-            'px-3 py-2 border rounded-lg text-gray-900',
+            'px-3 py-2 border rounded-lg text-gray-900 bg-white',
             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
             'disabled:bg-gray-100 disabled:cursor-not-allowed',
             error
@@ -57,7 +50,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
         {helperText && !error && (
           <p className="text-sm text-gray-500">{helperText}</p>
         )}

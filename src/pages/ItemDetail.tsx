@@ -1,4 +1,5 @@
-import { MapPin, Calendar, User, Package, Clock, AlertCircle, ChevronLeft } from 'lucide-react';
+import { MapPin, Calendar, User, Package, Clock, AlertCircle } from 'lucide-react';
+import BackButton from '@components/ui/BackButton';
 import { Card, Badge, Button, Modal, Spinner } from '@components/ui';
 import { ItemCategory, ITEM_CATEGORIES } from '@constants/categories';
 import { ItemStatus, ITEM_STATUS } from '@constants/status';
@@ -21,12 +22,7 @@ const ItemDetail = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
 
   const getStatusBadgeVariant = (status: ItemStatus) => {
-    const statusConfig = ITEM_STATUS[status];
-    if (statusConfig.color === 'green') return 'success';
-    if (statusConfig.color === 'blue') return 'info';
-    if (statusConfig.color === 'yellow') return 'warning';
-    if (statusConfig.color === 'gray') return 'default';
-    return 'default';
+    return ITEM_STATUS[status].variant;
   };
 
   if (loading || !item) {
@@ -41,13 +37,7 @@ const ItemDetail = () => {
     <ComponentErrorBoundary title="Item Detail Error">
       <div className="space-y-6">
         {/* Back Button */}
-        <Link to="/items">
-          <Button variant="ghost" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Items
-          </Button>
-        </Link>
-
+        <BackButton label="Back to Items" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -145,13 +135,21 @@ const ItemDetail = () => {
               </h2>
               <div className="space-y-3">
                 {item.status === ItemStatus.AVAILABLE && (
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    onClick={() => setIsClaimModalOpen(true)}
-                  >
-                    File a Claim
-                  </Button>
+                  user ? (
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setIsClaimModalOpen(true)}
+                    >
+                      File a Claim
+                    </Button>
+                  ) : (
+                    <Link to={`/login?redirect=/items/${id}`}>
+                      <Button variant="primary" fullWidth>
+                        Login to Claim
+                      </Button>
+                    </Link>
+                  )
                 )}
                 {(isAdmin() || isStaff()) && (
                   <>

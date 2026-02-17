@@ -1,14 +1,6 @@
-import { ReactNode } from 'react';
+import { BadgeProps } from '@app-types/ui.types';
 import { cn } from '@utils/helpers';
 import { variantStyles, sizeStyles } from '@constants/badge';
-export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info';
-
-export interface BadgeProps {
-  children: ReactNode;
-  variant?: BadgeVariant;
-  size?: 'sm' | 'md';
-  className?: string;
-}
 
 const Badge = ({
   children,
@@ -16,8 +8,6 @@ const Badge = ({
   size = 'md',
   className,
 }: BadgeProps) => {
- 
-
   return (
     <span
       className={cn(

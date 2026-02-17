@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Resolver, FieldErrors } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Upload, X, FileText as FileTextIcon, AlertCircle } from 'lucide-react';
+import BackButton from '@components/ui/BackButton';
 import { Button, Textarea, Card, Spinner } from '@components/ui';
 import { claimSchema } from '@validators';
 import { cn } from '@utils/helpers';
@@ -85,14 +86,11 @@ const FileClaim = () => {
       <Card className="max-w-2xl mx-auto text-center py-12">
         <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <p className="text-gray-600">{itemError || 'Item not found'}</p>
-        <Button
-          variant="outline"
-          onClick={() => navigate('/items')}
+        <BackButton 
+          label="Back to Items" 
+          variant="outline" 
           className="mt-4"
-        >
-          Back to Items
-        </Button>
-      </Card>
+        />      </Card>
     );
   }
 

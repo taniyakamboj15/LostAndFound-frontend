@@ -1,4 +1,4 @@
-import { BadgeVariant } from '@components/ui/Badge';
+import { BadgeVariant } from '@app-types/ui.types';
 
 /**
  * Returns the badge configuration for a match confidence score.

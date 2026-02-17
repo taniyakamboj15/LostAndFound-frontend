@@ -2,33 +2,20 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { FileCheck, User as UserIcon } from 'lucide-react';
 import { Card, Badge } from '@components/ui';
-import type { Claim } from '../../types/claim.types';
+import { ClaimCardProps } from '@app-types/ui.types';
 import { formatDate } from '@utils/formatters';
-
-interface ClaimCardProps {
-  claim: Claim;
-}
+import { CLAIM_STATUS_VARIANT_MAP } from '@constants/ui';
+import { ClaimStatus } from '@constants/status';
 
 const ClaimCard = memo(({ claim }: ClaimCardProps) => {
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'warning';
-      case 'VERIFIED':
-        return 'success';
-      case 'REJECTED':
-        return 'danger';
-      default:
-        return 'default';
-    }
-  };
+  const statusVariant = CLAIM_STATUS_VARIANT_MAP[claim.status as ClaimStatus] || 'default';
 
   return (
     <Link to={`/claims/${claim._id}`}>
       <Card hover>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Badge variant={getStatusVariant(claim.status) as "success" | "warning" | "info" | "danger" | "default"}>
+            <Badge variant={statusVariant}>
               {claim.status}
             </Badge>
             <span className="text-sm text-gray-500">

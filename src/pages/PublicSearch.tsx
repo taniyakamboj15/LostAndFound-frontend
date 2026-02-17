@@ -7,6 +7,7 @@ import { formatDate } from '@utils/formatters';
 import { usePublicSearch } from '@hooks/usePublicSearch';
 import { ComponentErrorBoundary } from '@components/feedback';
 import { getItemImageUrl } from '@utils/image';
+import { ROUTES } from '@constants/routes';
 
 const PublicSearch = () => {
   const { items, isLoading, error, filters, updateFilters, clearFilters, search } = usePublicSearch();
@@ -221,9 +222,11 @@ const PublicSearch = () => {
             <p className="text-gray-600 mb-6">
               Submit a lost item report and we'll notify you when we find a match
             </p>
+            <Link to={ROUTES.LOST_REPORT}>
             <Button variant="primary" size="lg">
               Submit Lost Report
             </Button>
+            </Link>
           </div>
         </Card>
       </div>

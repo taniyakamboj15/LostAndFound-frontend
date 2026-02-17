@@ -121,6 +121,7 @@ export const lostReportSchema = yup.object({
   identifyingFeatures: yup
     .array()
     .of(yup.string().min(3, 'Feature must be at least 3 characters').required())
+    .min(1, 'At least one identifying feature is required')
     .default([])
     .required(),
 });
