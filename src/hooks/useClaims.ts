@@ -1,11 +1,10 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { claimService } from '@services/claim.service';
 import { useAuth } from './useAuth';
 import { useToast } from './useToast';
-import { useDebounce } from './useDebounce';
+import { useQueryFilters } from './useQueryFilters';
 import { ClaimStatus } from '@constants/status';
-import { Claim } from '../types/claim.types';
 import { ApiError } from '../types/api.types';
 
 export const useFileClaim = (itemId: string | null) => {
@@ -94,32 +93,45 @@ export const useFileClaim = (itemId: string | null) => {
   }), [proofFiles, isSubmitting, handleFileChange, removeFile, submitClaim]);
 };
 
-interface ClaimFilters {
-  keyword?: string;
-  status?: ClaimStatus | '';
-}
+import { Claim, ClaimFilterState } from '../types/claim.types';
 
-export const useClaimsList = (initialFilters: ClaimFilters = {}) => {
+export const useClaimsList = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const toast = useToast();
+
+  const initialFilters: ClaimFilterState = useMemo(() => ({
+    keyword: searchParams.get('keyword') || undefined,
+    status: (searchParams.get('status') as ClaimStatus) || undefined,
+    date: searchParams.get('date') || undefined,
+  }), []);
+
+  const { filters, setFilters, debouncedFilters } = useQueryFilters<ClaimFilterState>(initialFilters);
+
   const [claims, setClaims] = useState<Claim[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<ClaimFilters>(initialFilters);
-  const debouncedFilters = useDebounce(filters, 500);
-  const toast = useToast();
 
-  const fetchClaims = useCallback(async (currentFilters: ClaimFilters = debouncedFilters) => {
+  const fetchClaims = useCallback(async (currentFilters: ClaimFilterState = debouncedFilters) => {
     setIsLoading(true);
     setError(null);
     try {
       const cleanFilters = {
         ...currentFilters,
-        status: currentFilters.status || undefined
+        status: currentFilters.status || undefined,
+        date: currentFilters.date || undefined,
       };
 
-      const response = user?.role === 'CLAIMANT'
-        ? await claimService.getMyClaims(cleanFilters)
-        : await claimService.getAll(cleanFilters);
+      if (!user) return;
+
+      let response;
+      if (user.role === 'CLAIMANT') {
+        response = await claimService.getMyClaims(cleanFilters);
+      } else if (user.role === 'STAFF' || user.role === 'ADMIN') {
+        response = await claimService.getAll(cleanFilters);
+      } else {
+        return;
+      }
       setClaims(response.data);
     } catch (err: unknown) {
       const error = err as ApiError;
@@ -129,16 +141,18 @@ export const useClaimsList = (initialFilters: ClaimFilters = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedFilters, toast, user?.role]); // Added user?.role dependency
+  }, [debouncedFilters, toast, user]);
 
-  const updateFilters = useCallback((newFilters: ClaimFilters) => {
+  const updateFilters = useCallback((newFilters: ClaimFilterState) => {
     setFilters(newFilters);
-    // Removed immediate fetchClaims call
-  }, []);
+  }, [setFilters]);
 
+  // Fetch claims only when filters change or user changes
   useEffect(() => {
-    fetchClaims(debouncedFilters);
-  }, [debouncedFilters]); // Trigger fetch when debounced filters change
+    if (user?.role) {
+      fetchClaims(debouncedFilters);
+    }
+  }, [debouncedFilters, user?.role, fetchClaims]); 
 
   return useMemo(() => ({
     claims,
@@ -146,6 +160,6 @@ export const useClaimsList = (initialFilters: ClaimFilters = {}) => {
     error,
     filters,
     updateFilters,
-    refresh: fetchClaims,
+    refresh: () => fetchClaims(filters),
   }), [claims, isLoading, error, filters, updateFilters, fetchClaims]);
 };

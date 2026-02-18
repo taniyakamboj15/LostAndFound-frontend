@@ -4,28 +4,15 @@ import * as yup from 'yup';
 import { useForm, useFieldArray, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Input, Select, Textarea, Card } from '@components/ui';
-import { lostReportSchema } from '../validators';
 import { ITEM_CATEGORIES } from '@constants/categories';
 import { useCreateReport } from '@hooks/useReports';
 import { useAuth } from '@hooks/useAuth';
 import { ComponentErrorBoundary } from '@components/feedback';
-import { CreateReportFormData } from '../types/createReport.types';
+import { CreateReportFormData, CreateReportFormValues } from '../types/createReport.types';
 import { CreateLostReportData } from '../types/report.types';
+import { createReportFormSchema } from '../validators';
 
-// Senior Dev Practice: Define form-specific values for better useFieldArray compatibility
-interface CreateReportFormValues extends Omit<CreateReportFormData, 'identifyingFeatures' | 'dateLost'> {
-  dateLost: string; // HTML input[type="date"] returns string
-  identifyingFeatures: { text: string }[];
-}
 
-// Senior Dev Practice: Refine schema for the specific form structure
-const createReportFormSchema = lostReportSchema.shape({
-  identifyingFeatures: yup.array().of(
-    yup.object({
-      text: yup.string().min(3, 'Feature must be at least 3 characters').required()
-    })
-  ).min(1, 'At least one identifying feature is required').required()
-});
 
 const CreateReport = () => {
   const navigate = useNavigate();

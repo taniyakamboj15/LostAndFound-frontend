@@ -116,6 +116,16 @@ const CreateItem = () => {
                   {...register('dateFound')}
                 />
               </div>
+
+              <Textarea
+                label="Identifying Features"
+                placeholder="e.g., Scratches on back, Sticker on case (Comma separated)"
+                helperText="List unique features separated by commas"
+                error={errors.identifyingFeatures?.message}
+                fullWidth
+                rows={2}
+                {...register('identifyingFeatures')}
+              />
             </div>
           </Card>
 
@@ -225,7 +235,8 @@ const CreateItem = () => {
                   { value: '', label: 'Select a storage location' },
                   ...locations.map((loc) => ({
                     value: loc._id,
-                    label: `${loc.name} (${loc.location})`,
+                    label: `${loc.name} (${loc.location}) [${loc.currentCount}/${loc.capacity}]`,
+                    disabled: loc.currentCount >= loc.capacity,
                   })),
                 ]}
                 helperText="Where the item is currently stored"

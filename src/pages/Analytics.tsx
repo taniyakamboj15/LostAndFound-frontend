@@ -3,14 +3,10 @@ import { Package, Users, TrendingUp } from 'lucide-react';
 import { Card } from '@components/ui';
 import { useAuth } from '@hooks/useAuth';
 import { ComponentErrorBoundary } from '@components/feedback';
-import type { AnalyticsMetrics, TrendDataPoint } from '../types';
+import type { AnalyticsLoaderData } from '../types/analytics.types';
 
 const Analytics = () => {
-  const { metrics, trends, error } = useLoaderData() as {
-    metrics: AnalyticsMetrics | null;
-    trends: TrendDataPoint[];
-    error: string | null;
-  };
+  const { metrics, trends, error } = useLoaderData() as AnalyticsLoaderData;
   const { isAdmin } = useAuth();
 
   if (!isAdmin()) {
@@ -98,9 +94,9 @@ const Analytics = () => {
                 {trends.map((trend, index) => (
                   <tr key={index} className="border-b hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium text-gray-900">{trend.date}</td>
-                    <td className="py-3 px-4 text-right text-gray-900">{trend.itemsFound}</td>
-                    <td className="py-3 px-4 text-right text-gray-900">{trend.itemsClaimed}</td>
-                    <td className="py-3 px-4 text-right text-gray-900">{trend.itemsReturned}</td>
+                    <td className="py-3 px-4 text-right text-gray-900">{trend.found}</td>
+                    <td className="py-3 px-4 text-right text-gray-900">{trend.claimed}</td>
+                    <td className="py-3 px-4 text-right text-gray-900">{trend.returned}</td>
                   </tr>
                 ))}
               </tbody>

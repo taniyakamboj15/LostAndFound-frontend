@@ -27,6 +27,7 @@ interface EditItemFormData {
   isHighValue: boolean;
   storageLocation?: string | null;
   status: ItemStatus;
+  identifyingFeatures?: string;
 }
 
 const EditItem = () => {
@@ -68,6 +69,7 @@ const EditItem = () => {
         isHighValue: existingItem.isHighValue,
         storageLocation: typeof existingItem.storageLocation === 'object' ? existingItem.storageLocation._id : existingItem.storageLocation,
         status: existingItem.status,
+        identifyingFeatures: existingItem.identifyingFeatures?.join(', '),
       });
     }
   }, [existingItem, reset]);
@@ -193,6 +195,16 @@ const EditItem = () => {
                   {...register('dateFound')}
                 />
               </div>
+
+              <Textarea
+                label="Identifying Features"
+                placeholder="e.g., Scratches on back, Sticker on case (Comma separated)"
+                helperText="List unique features separated by commas"
+                error={errors.identifyingFeatures?.message}
+                fullWidth
+                rows={2}
+                {...register('identifyingFeatures')}
+              />
             </div>
           </Card>
 

@@ -11,7 +11,11 @@ import {
 } from '../types';
 
 export const itemService = {
-  // Get all items with filters
+  /**
+   * Get all registered items with optional filtering
+   * @param filters Search and filter criteria
+   * @returns Paginated list of items
+   */
   getItems: async (filters?: ItemFilters): Promise<ItemSearchResponse> => {
     const response = await api.get<ItemSearchResponse>(API_ENDPOINTS.ITEMS.BASE, {
       params: filters,
@@ -19,13 +23,21 @@ export const itemService = {
     return response.data;
   },
 
-  // Get item by ID
+  /**
+   * Get detailed information for a specific item
+   * @param id Item ID
+   * @returns Detailed item profile
+   */
   getById: async (id: string): Promise<ApiResponse<Item>> => {
     const response = await api.get<ApiResponse<Item>>(API_ENDPOINTS.ITEMS.BY_ID(id));
     return response.data;
   },
 
-  // Create new item
+  /**
+   * Register a new found item (Staff/Admin only)
+   * @param data Item data and photos
+   * @returns Created item details
+   */
   create: async (data: CreateItemData): Promise<ApiResponse<Item>> => {
     let formData: FormData;
     
@@ -76,7 +88,12 @@ export const itemService = {
     return response.data;
   },
 
-  // Update item
+  /**
+   * Update existing item details
+   * @param id Item ID
+   * @param data Partial or complete update data
+   * @returns Updated item profile
+   */
   update: async (id: string, data: UpdateItemData): Promise<ApiResponse<Item>> => {
     const isFormData = data instanceof FormData;
     const response = await api.patch<ApiResponse<Item>>(
@@ -91,7 +108,12 @@ export const itemService = {
     return response.data;
   },
 
-  // Update item status
+  /**
+   * Change the lifecycle status of an item
+   * @param id Item ID
+   * @param status New status value
+   * @returns Updated item profile
+   */
   updateStatus: async (id: string, status: string): Promise<ApiResponse<Item>> => {
     const response = await api.patch<ApiResponse<Item>>(
       API_ENDPOINTS.ITEMS.STATUS(id),
@@ -100,7 +122,12 @@ export const itemService = {
     return response.data;
   },
 
-  // Assign storage location
+  /**
+   * Assign or change the storage location of an item
+   * @param id Item ID
+   * @param storageId Storage location ID
+   * @returns Updated item profile
+   */
   assignStorage: async (id: string, storageId: string): Promise<ApiResponse<Item>> => {
     const response = await api.patch<ApiResponse<Item>>(
       API_ENDPOINTS.ITEMS.STORAGE(id),
@@ -109,7 +136,11 @@ export const itemService = {
     return response.data;
   },
 
-  // Public search (no auth required)
+  /**
+   * Search for items visible to the public (unauthenticated)
+   * @param filters Publicly available search filters
+   * @returns List of public-facing item summaries
+   */
   publicSearch: async (filters?: ItemFilters): Promise<ApiResponse<PublicItem[]>> => {
     const response = await api.get<ApiResponse<PublicItem[]>>(
       API_ENDPOINTS.PUBLIC.ITEMS,

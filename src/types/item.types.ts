@@ -43,6 +43,7 @@ export interface Item {
   estimatedValue?: number;
   finderName?: string;
   finderContact?: string;
+  identifyingFeatures?: string[];
   createdAt: string;
   updatedAt: string;
 }

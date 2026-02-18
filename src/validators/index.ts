@@ -79,6 +79,7 @@ export const itemSchema = yup.object({
   storageLocation: yup.string().nullable().optional(),
   finderName: yup.string().optional(),
   finderContact: yup.string().optional(),
+  identifyingFeatures: yup.string().optional(),
 });
 
 export const editItemSchema = itemSchema.shape({
@@ -124,6 +125,15 @@ export const lostReportSchema = yup.object({
     .min(1, 'At least one identifying feature is required')
     .default([])
     .required(),
+});
+
+// Senior Dev Practice: Refine schema for the specific form structure
+export const createReportFormSchema = lostReportSchema.shape({
+  identifyingFeatures: yup.array().of(
+    yup.object({
+      text: yup.string().min(3, 'Feature must be at least 3 characters').required()
+    })
+  ).min(1, 'At least one identifying feature is required').required()
 });
 
 // Claim Schema

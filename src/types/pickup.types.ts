@@ -76,3 +76,9 @@ export interface AvailableSlotsResponse {
   success: boolean;
   data: PickupSlot[];
 }
+
+// Pickup Filters
+export interface PickupFilters {
+  isCompleted?: string;
+  pickupDate?: string;
+}

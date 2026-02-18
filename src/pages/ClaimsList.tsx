@@ -6,26 +6,25 @@ import { ClaimStatus, CLAIM_STATUS_LABELS } from '@constants/status';
 import { CLAIM_STATUS_VARIANT_MAP } from '@constants/ui';
 import { formatRelativeTime } from '@utils/formatters';
 import { useClaimsList } from '@hooks/useClaims';
+import { useAuth } from '@hooks/useAuth';
 import { ComponentErrorBoundary } from '@components/feedback';
 
-interface ClaimFilters {
-  keyword: string;
-  status: ClaimStatus | '';
-}
+import { ClaimFilterState } from '../types/claim.types';
 
 
 
 const ClaimsList = () => {
   const { claims, isLoading, error, filters, updateFilters, refresh } = useClaimsList();
+  const { user } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
 
-  const handleFilterChange = useCallback((key: keyof ClaimFilters, value: string) => {
+  const handleFilterChange = useCallback((key: keyof ClaimFilterState, value: string) => {
     updateFilters({ ...filters, [key]: value });
   }, [filters, updateFilters]);
 
   const handleSearch = useCallback(() => {
-    refresh(filters);
-  }, [filters, refresh]);
+    refresh();
+  }, [refresh]);
 
   const getStatusBadgeVariant = (status: ClaimStatus) => {
     return CLAIM_STATUS_VARIANT_MAP[status as keyof typeof CLAIM_STATUS_VARIANT_MAP] || 'default';
@@ -70,7 +69,7 @@ const ClaimsList = () => {
 
             {/* Advanced Filters */}
             {showFilters && (
-              <div className="pt-4 border-t">
+              <div className="pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
                   label="Status"
                   value={filters.status || ''}
@@ -84,6 +83,15 @@ const ClaimsList = () => {
                   ]}
                   fullWidth
                 />
+                 <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Filed Date</label>
+                  <input
+                    type="date"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={filters.date || ''}
+                    onChange={(e) => handleFilterChange('date', e.target.value)}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -132,12 +140,12 @@ const ClaimsList = () => {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                         <div className="flex items-center gap-2 text-gray-600">
                           <UserIcon className="h-4 w-4 flex-shrink-0" />
-                          <span>Claimant: {claim.claimantId.name}</span>
-                          {/* Visual indicator for current user's claims */}
-                          {/* Note: This list might be "My Claims" or "All Claims". If it's "All Claims" seen by staff, this highlights their own (unlikely). 
-                              If it's a claimant viewing "My Claims", they are all theirs. 
-                              But user insisted on "show claimed by you". Adding explicit badge. */}
-                           <Badge variant="info" size="sm" className="ml-2">Claimed by You</Badge>
+                          {/* Conditional display: "Claimed by You" if currentUser == claimant, otherwise "Claimant: Name" */}
+                          {user?.id === (typeof claim.claimantId === 'object' ? claim.claimantId._id : claim.claimantId) ? (
+                            <Badge variant="info" size="sm">Claimed by You</Badge>
+                          ) : (
+                            <span>Claimant: {typeof claim.claimantId === 'object' ? claim.claimantId.name : 'Unknown'}</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Calendar className="h-4 w-4 flex-shrink-0" />

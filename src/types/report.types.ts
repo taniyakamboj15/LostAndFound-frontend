@@ -55,6 +55,14 @@ export interface LostReportFilters {
   limit?: number;
 }
 
+// Reports Filter State (Frontend)
+export interface ReportFilterState {
+  keyword?: string;
+  category?: ItemCategory | '';
+  dateLostFrom?: string;
+  dateLostTo?: string;
+}
+
 // Lost Report Response
 export interface LostReportResponse {
   success: boolean;

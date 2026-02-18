@@ -9,38 +9,59 @@ import type {
 } from '../types';
 
 export const authService = {
-  // Register new user
+  /**
+   * Register a new user
+   * @param data Registration information
+   * @returns Auth response with user data
+   */
   register: async (data: RegisterData): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
     return response.data;
   },
 
-  // Login with credentials
+  /**
+   * Login with email and password
+   * @param credentials Login credentials
+   * @returns Auth response with user and artifacts
+   */
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
     return response.data;
   },
 
-  // Logout
+  /**
+   * Logout the current user and clear sessions
+   * @returns Generic API response
+   */
   logout: async (): Promise<ApiResponse> => {
     const response = await api.post<ApiResponse>(API_ENDPOINTS.AUTH.LOGOUT);
     return response.data;
   },
 
-  // Refresh access token
-  refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REFRESH, {
+  /**
+   * Refresh the access token using a refresh token
+   * @param refreshToken The refresh token
+   * @returns API response with new tokens
+   */
+  refreshToken: async (refreshToken: string): Promise<ApiResponse> => {
+    const response = await api.post<ApiResponse>(API_ENDPOINTS.AUTH.REFRESH, {
       refreshToken,
     });
     return response.data;
   },
 
-  // Google OAuth login
+  /**
+   * Redirect user to Google OAuth login page
+   */
   googleLogin: (): void => {
     window.location.href = `${api.defaults.baseURL}${API_ENDPOINTS.AUTH.GOOGLE}`;
   },
 
-  // Verify email
+  /**
+   * Verify user email via token
+   * @param token Verification token from email
+   * @returns Generic API response
+   */
   verifyEmail: async (token: string): Promise<ApiResponse> => {
     const response = await api.post<ApiResponse>(API_ENDPOINTS.USERS.VERIFY_EMAIL, {
       token,
@@ -48,13 +69,22 @@ export const authService = {
     return response.data;
   },
 
-  // Resend verification email
-  resendVerification: async (): Promise<ApiResponse> => {
-    const response = await api.post<ApiResponse>(API_ENDPOINTS.USERS.RESEND_VERIFICATION);
+  /**
+   * Request resending the verification email
+   * @param email User's email address
+   * @returns Generic API response
+   */
+  resendVerification: async (email: string): Promise<ApiResponse> => {
+    const response = await api.post<ApiResponse>(API_ENDPOINTS.USERS.RESEND_VERIFICATION, {
+      email,
+    });
     return response.data;
   },
 
-  // Get current user profile
+  /**
+   * Get current authenticated user profile
+   * @returns API response with user profile data
+   */
   getProfile: async (): Promise<ApiResponse<User>> => {
     const response = await api.get<ApiResponse<User>>(API_ENDPOINTS.USERS.PROFILE);
     return response.data;

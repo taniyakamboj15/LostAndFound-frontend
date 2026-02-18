@@ -49,6 +49,8 @@ This repository contains the **Frontend** application, built with React, TypeScr
   - Header, Card, and Calendar components for Pickups
   - Centralized UI constants and type definitions
   - Custom hooks for business logic separation
+- **AI Assistant Chat Widget**: Interactive chat overlay for assistance, powered by Google Gemini.
+
 
 ## 🛠️ Tech Stack
 
@@ -231,6 +233,20 @@ src/components/
 
 ## 🆕 Recent Updates (February 2026)
 
+### Wed Update (February 18, 2026) ✨ - `wed-branch`
+> **Featured**: Enhanced Documentation & AI Chat Integration
+> This update was implemented using **AI Agentic Coding (Antigravity)**.
+
+#### AI & UI Improvements
+- ✅ **Cloudinary Integration**: Fully migrated frontend uploads (Item Photos, Claim Proofs) to use Cloudinary service.
+- ✅ **AI Chat Widget**: Implemented a floating chat assistant for real-time user help.
+- ✅ **Email Verification Gate**: Added modal gates to prevent actions until email is verified.
+- ✅ **Type Safety Refactor**: Massively reduced `any` usage in services and components.
+
+#### DX & Documentation
+- ✅ **JSDoc Serialization**: Added JSDoc comments to core API services.
+- ✅ **Service Layer Consolidation**: Refined Axios interceptors for better error handling.
+
 ### Today's Updates (February 17, 2026) 🔥
 
 > **View all changes:** Checkout the `today_update` branch to see all of today's improvements in detail.
@@ -267,6 +283,26 @@ src/components/
 - ✅ **Component Architecture**: Full component hierarchy documented
 - ✅ **State Management**: Strategy and patterns explained
 - ✅ **Future Roadmap**: 8+ planned features with timelines
+
+## 🤖 AI Assistant (Chatbot) Guide
+
+The platform features an intelligent AI Chatbot designed to help you find your lost items faster.
+
+### Features 🌟
+*   **Conversational Reporting**: File a lost report by just talking to the AI—no long forms required!
+*   **Instant Search**: Ask about found items directly (e.g., "Mera wallet mila kya?").
+*   **Status Updates**: Check if your claim is verified or when your pickup is scheduled.
+*   **Smart Matching**: The AI can suggest potential matches based on your previous reports.
+
+### Restrictions 🚫
+*   **Login Required**: Only registered users can access the chat assistant.
+*   **Email Verification Gate**: 
+    > [!IMPORTANT]
+    > You **CANNOT** use the chatbot if your email is not verified. 
+    > A verification gate will appear, prompting you to verify your email before the chat interface becomes active.
+
+### How to use? 🖱️
+Click the floating **Chat Icon** at the bottom right of your screen to start a conversation anytime!
 
 ### Pickup UX Enhancements
 - ✅ **Calendar View for Pickups**: Interactive monthly calendar showing all scheduled pickups with month navigation

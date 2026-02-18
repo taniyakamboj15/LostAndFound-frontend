@@ -23,9 +23,9 @@ export interface CategoryBreakdown {
 // Trend Data Point
 export interface TrendDataPoint {
   date: string;
-  itemsFound: number;
-  itemsClaimed: number;
-  itemsReturned: number;
+  found: number;
+  claimed: number;
+  returned: number;
 }
 
 // Disposition Stats
@@ -58,4 +58,11 @@ export interface TrendsResponse {
 export interface DispositionStatsResponse {
   success: boolean;
   data: DispositionStats;
+}
+
+// Analytics Loader Data
+export interface AnalyticsLoaderData {
+  metrics: AnalyticsMetrics | null;
+  trends: TrendDataPoint[];
+  error: string | null;
 }

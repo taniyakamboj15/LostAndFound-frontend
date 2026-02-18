@@ -14,12 +14,6 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-    
-    if (token && token !== 'undefined' && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
     return config;
   },
   (error: AxiosError) => {
@@ -42,35 +36,20 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-        
-        if (!refreshToken) {
-          throw new Error('No refresh token');
-        }
-
-        // Call refresh endpoint
-        const response = await axios.post(
+        // Call refresh endpoint - cookies will be sent automatically
+        await axios.post(
           `${API_BASE_URL}/api/auth/refresh`,
-          { refreshToken },
+          {},
           { withCredentials: true }
         );
 
-        const { accessToken } = response.data.data;
-        
-        // Store new token
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-
-        // Retry original request with new token
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        }
-        
+        // Retry original request - new cookies will be sent automatically
         return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        // Clear user data on refresh failure
         localStorage.removeItem(STORAGE_KEYS.USER);
         
+        // Redirect to login
         window.location.href = '/login';
         
         return Promise.reject(refreshError);

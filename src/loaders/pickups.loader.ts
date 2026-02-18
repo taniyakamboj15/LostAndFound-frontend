@@ -1,15 +1,15 @@
 import { LoaderFunctionArgs } from 'react-router-dom';
 import { pickupService } from '@services/pickup.service';
 
-export async function pickupsListLoader() {
-  try {
-    const response = await pickupService.getAll();
-    return { pickups: response.data, error: null };
-  } catch (error) {
-    console.error('Failed to load pickups:', error);
-    return { pickups: [], error: 'Failed to load pickups' };
-  }
-}
+// export async function pickupsListLoader() {
+//   try {
+//     const response = await pickupService.getAll();
+//     return { pickups: response.data, error: null };
+//   } catch (error) {
+//     console.error('Failed to load pickups:', error);
+//     return { pickups: [], error: 'Failed to load pickups' };
+//   }
+// }
 
 export async function pickupDetailLoader({ params }: LoaderFunctionArgs) {
   const { id } = params;

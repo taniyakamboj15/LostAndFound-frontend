@@ -91,4 +91,11 @@ export const API_ENDPOINTS = {
     BY_USER: (userId: string) => `/api/activities/user/${userId}`,
     BY_ENTITY: (type: string, id: string) => `/api/activities/entity/${type}/${id}`,
   },
+
+  // Chat
+  CHAT: {
+    START: '/api/chat/start',
+    MESSAGE: '/api/chat/message',
+    SESSION: (sessionId: string) => `/api/chat/session/${sessionId}`,
+  },
 } as const;

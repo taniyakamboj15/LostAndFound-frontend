@@ -9,4 +9,5 @@ export interface CreateItemFormData {
   isHighValue: boolean;
   estimatedValue?: number;
   storageLocation?: string | null;
+  identifyingFeatures?: string;
 }

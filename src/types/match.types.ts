@@ -5,9 +5,10 @@ export interface Match {
     _id: string;
     category: string;
     description: string;
-    photos: Array<{ path: string }>;
+    photos: Array<{ path: string; filename?: string }>;
     locationFound: string;
     dateFound: string;
+    status: string;
   } | null; // Can be null if item is deleted
   lostReportId: {
     _id: string;
@@ -15,8 +16,11 @@ export interface Match {
     description: string;
     locationLost: string;
     dateLost: string;
+    contactEmail?: string;
+    identifyingFeatures?: string[];
   };
   confidenceScore: number;
+  featureScore?: number;
   categoryScore: number;
   keywordScore: number;
   dateScore: number;
@@ -39,4 +43,12 @@ export interface MatchScoreDetails {
 export interface MatchesResponse {
   success: boolean;
   data: Match[];
+}
+
+
+export interface MatchListModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  matches: Match[];
+  title?: string;
 }

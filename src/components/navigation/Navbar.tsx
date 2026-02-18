@@ -1,19 +1,43 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import { 
   Package, 
-  LogOut
+  LogOut,
+  BadgeCheck,
+  ShieldAlert
 } from 'lucide-react';
 import { useAuth } from '@hooks/useAuth';
 import { ROUTES } from '../../constants/routes';
 import { cn } from '@utils/helpers';
 import { PUBLIC_NAV_ITEMS, PROTECTED_NAV_ITEMS, STAFF_NAV_ITEMS, ADMIN_NAV_ITEMS } from '@constants/ui';
+import { authService } from '@services/auth.service';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const location = useLocation();
   const { user, isAuthenticated, isAdmin, isStaff, logout } = useAuth();
+  const [isResending, setIsResending] = useState(false);
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleResendVerification = async () => {
+    if (isResending) return;
+    
+    try {
+      setIsResending(true);
+      if (user?.email) {
+        await authService.resendVerification(user.email);
+        toast.success('Verification email sent! Please check your inbox. The link expires in 10 minutes.');
+      } else {
+        toast.error('User email not found');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to send verification email');
+    } finally {
+      setIsResending(false);
+    }
   };
 
   const navItems = [
@@ -69,6 +93,26 @@ const Navbar = () => {
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
+                <div className="flex items-center gap-2 mr-2">
+                   {user?.isEmailVerified ? (
+                     <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200" title="Email Verified">
+                       <BadgeCheck className="h-4 w-4" />
+                       <span className="text-xs font-medium hidden sm:inline">Verified</span>
+                     </div>
+                   ) : (
+                     <button
+                       onClick={handleResendVerification}
+                       disabled={isResending}
+                       className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-200 hover:bg-amber-100 transition-colors"
+                       title="Email not verified. Click to resend verification email."
+                     >
+                       <ShieldAlert className="h-4 w-4" />
+                       <span className="text-xs font-medium hidden sm:inline">
+                         {isResending ? 'Sending...' : 'Verify Email'}
+                       </span>
+                     </button>
+                   )}
+                </div>
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                   <p className="text-xs text-gray-500">{user?.role}</p>

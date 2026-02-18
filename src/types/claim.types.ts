@@ -69,8 +69,16 @@ export interface RejectClaimData {
 export interface ClaimFilters {
   keyword?: string;
   status?: ClaimStatus;
+  itemId?: string;
   page?: number;
   limit?: number;
+}
+
+// Claim Filter State (Frontend)
+export interface ClaimFilterState {
+  keyword?: string;
+  status?: ClaimStatus | '';
+  date?: string;
 }
 
 // Claim Response

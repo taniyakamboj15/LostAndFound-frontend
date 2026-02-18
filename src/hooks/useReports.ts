@@ -1,39 +1,52 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { reportService } from '@services/report.service';
 import { useAuth } from './useAuth';
 import { useToast } from './useToast';
-import { useDebounce } from './useDebounce';
+import { useQueryFilters } from './useQueryFilters';
 import { getErrorMessage } from '@utils/errors';
 import { ItemCategory } from '@constants/categories';
-import type { LostReport, CreateLostReportData } from '../types/report.types';
+import type { LostReport, CreateLostReportData, ReportFilterState } from '../types/report.types';
 
-interface ReportFilters {
-  keyword?: string;
-  category?: ItemCategory | '';
-}
-
-export const useReportsList = (initialFilters: ReportFilters = {}) => {
+export const useReportsList = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+
+  const initialFilters: ReportFilterState = useMemo(() => ({
+    keyword: searchParams.get('keyword') || undefined,
+    category: (searchParams.get('category') as ItemCategory) || undefined,
+    dateLostFrom: searchParams.get('dateLostFrom') || undefined,
+    dateLostTo: searchParams.get('dateLostTo') || undefined,
+  }), []);
+
+  const { filters, setFilters, debouncedFilters } = useQueryFilters<ReportFilterState>(initialFilters);
+  
   const [reports, setReports] = useState<LostReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<ReportFilters>(initialFilters);
-  const debouncedFilters = useDebounce(filters, 500);
   const toast = useToast();
 
-  const fetchReports = useCallback(async (currentFilters: ReportFilters = debouncedFilters) => {
+  const fetchReports = useCallback(async (currentFilters: ReportFilterState = debouncedFilters) => {
     setIsLoading(true);
     setError(null);
     try {
       const filterParams = {
         keyword: currentFilters.keyword,
         category: currentFilters.category || undefined,
+        dateLostFrom: currentFilters.dateLostFrom || undefined,
+        dateLostTo: currentFilters.dateLostTo || undefined,
       };
 
-      const response = user?.role === 'CLAIMANT'
-        ? await reportService.getMyReports(filterParams)
-        : await reportService.getAll(filterParams);
+      if (!user) return;
+
+      let response;
+      if (user.role === 'CLAIMANT') {
+        response = await reportService.getMyReports(filterParams);
+      } else if (user.role === 'STAFF' || user.role === 'ADMIN') {
+        response = await reportService.getAll(filterParams);
+      } else {
+        return;
+      }
       setReports(response.data);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
@@ -42,16 +55,18 @@ export const useReportsList = (initialFilters: ReportFilters = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedFilters, toast, user?.role]);
+  }, [debouncedFilters, toast, user]);
 
-  const updateFilters = useCallback((newFilters: ReportFilters) => {
+  const updateFilters = useCallback((newFilters: ReportFilterState) => {
     setFilters(newFilters);
-    // Removed immediate fetchReports call
-  }, []);
+  }, [setFilters]);
 
+  // Fetch reports only when filters change or user changes
   useEffect(() => {
-    fetchReports(debouncedFilters);
-  }, [debouncedFilters]); // Trigger fetch when debounced filters change
+    if (user?.role) {
+      fetchReports(debouncedFilters);
+    }
+  }, [debouncedFilters, user?.role, fetchReports]); 
 
   return useMemo(() => ({
     reports,
@@ -59,7 +74,7 @@ export const useReportsList = (initialFilters: ReportFilters = {}) => {
     error,
     filters,
     updateFilters,
-    refresh: fetchReports,
+    refresh: () => fetchReports(filters),
   }), [reports, isLoading, error, filters, updateFilters, fetchReports]);
 };
 

@@ -15,8 +15,8 @@ interface AuthState {
 // Initial state
 const initialState: AuthState = {
   user: JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || 'null'),
-  accessToken: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
-  isAuthenticated: !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
+  accessToken: null,
+  isAuthenticated: !!localStorage.getItem(STORAGE_KEYS.USER),
   isLoading: false,
   error: null,
 };
@@ -67,12 +67,11 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (state, action: PayloadAction<{ user: User; accessToken: string }>) => {
       state.user = action.payload.user;
-      state.accessToken = action.payload.accessToken;
+      state.accessToken = null; // Access token handled by cookie
       state.isAuthenticated = true;
       
-      // Store in localStorage
+      // Store user info for UI persistence
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload.user));
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, action.payload.accessToken);
     },
     clearCredentials: (state) => {
       state.user = null;
@@ -81,8 +80,6 @@ const authSlice = createSlice({
       
       // Clear localStorage
       localStorage.removeItem(STORAGE_KEYS.USER);
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     },
     clearError: (state) => {
       state.error = null;
@@ -98,13 +95,11 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.data.user;
-        state.accessToken = action.payload.data.accessToken;
+        state.accessToken = null; // Access token handled by cookie
         state.isAuthenticated = true;
         
-        // Store tokens
+        // Store user info
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload.data.user));
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, action.payload.data.accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, action.payload.data.refreshToken);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -136,8 +131,9 @@ const authSlice = createSlice({
         
         // Clear localStorage
         localStorage.removeItem(STORAGE_KEYS.USER);
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        
+        // Force reload to ensure all states are cleared
+        window.location.reload();
       });
 
     // Get Profile

@@ -34,11 +34,8 @@ const VerifyEmail = lazy(() => import('@pages/VerifyEmail'));
 import {
   itemsListLoader,
   itemDetailLoader,
-  claimsListLoader,
   claimDetailLoader,
-  reportsListLoader,
   reportDetailLoader,
-  pickupsListLoader,
   pickupDetailLoader,
   analyticsLoader,
   storageLoader,
@@ -110,7 +107,7 @@ export const router = createBrowserRouter([
       {
         path: '/claims',
         element: <SuspenseWrapper fallback={<ShimmerList />}><ProtectedRoute><ClaimsList /></ProtectedRoute></SuspenseWrapper>,
-        loader: claimsListLoader,
+        // loader removed to use useClaims hook
       },
       {
         path: '/claims/create',
@@ -130,7 +127,7 @@ export const router = createBrowserRouter([
       {
         path: '/reports',
         element: <SuspenseWrapper fallback={<ShimmerList />}><ProtectedRoute><ReportsList /></ProtectedRoute></SuspenseWrapper>,
-        loader: reportsListLoader,
+        // loader removed to use useReports hook with role-based fetching
       },
       {
         path: '/reports/create',
@@ -145,7 +142,7 @@ export const router = createBrowserRouter([
       {
         path: '/pickups',
         element: <SuspenseWrapper fallback={<ShimmerList />}><ProtectedRoute><PickupsList /></ProtectedRoute></SuspenseWrapper>,
-        loader: pickupsListLoader,
+        // loader removed to use usePickups hook with role-based fetching
       },
       {
         path: '/pickups/:id',

@@ -7,22 +7,19 @@ import { formatDate, formatRelativeTime } from '@utils/formatters';
 import { useReportsList } from '@hooks/useReports';
 import { ComponentErrorBoundary } from '@components/feedback';
 
-interface ReportFilters {
-  keyword: string;
-  category: ItemCategory | '';
-}
+import { ReportFilterState } from '../types/report.types';
 
 const ReportsList = () => {
   const { reports, isLoading, error, filters, updateFilters, refresh } = useReportsList();
   const [showFilters, setShowFilters] = useState(false);
 
-  const handleFilterChange = useCallback((key: keyof ReportFilters, value: string) => {
+  const handleFilterChange = useCallback((key: keyof ReportFilterState, value: string) => {
     updateFilters({ ...filters, [key]: value });
   }, [filters, updateFilters]);
 
   const handleSearch = useCallback(() => {
-    refresh(filters);
-  }, [filters, refresh]);
+    refresh();
+  }, [refresh]);
 
   return (
     <ComponentErrorBoundary title="Reports List Error">
@@ -83,6 +80,26 @@ const ReportsList = () => {
                   ]}
                   fullWidth
                 />
+                
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                  <input
+                    type="date"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={filters.dateLostFrom || ''}
+                    onChange={(e) => handleFilterChange('dateLostFrom', e.target.value)}
+                  />
+                </div>
+
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                  <input
+                    type="date"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={filters.dateLostTo || ''}
+                    onChange={(e) => handleFilterChange('dateLostTo', e.target.value)}
+                  />
+                </div>
               </div>
             )}
           </div>

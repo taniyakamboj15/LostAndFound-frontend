@@ -5,7 +5,7 @@ import { ButtonProps } from '../../types/ui.types'; // Assuming ButtonProps is e
 
 interface BackButtonProps extends Omit<ButtonProps, 'onClick'> {
   label?: string;
-  fallbackPath?: string; // Optional path to navigate to if history is empty (though -1 usually works)
+  fallbackPath?: string; 
 }
 
 const BackButton = ({ 
