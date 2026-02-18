@@ -235,10 +235,8 @@ src/components/
 
 ### Wed Update (February 18, 2026) ✨ - `wed-branch`
 > **Featured**: Enhanced Documentation & AI Chat Integration
-> This update was implemented using **AI Agentic Coding (Antigravity)**.
 
 #### AI & UI Improvements
-- ✅ **Cloudinary Integration**: Fully migrated frontend uploads (Item Photos, Claim Proofs) to use Cloudinary service.
 - ✅ **AI Chat Widget**: Implemented a floating chat assistant for real-time user help.
 - ✅ **Email Verification Gate**: Added modal gates to prevent actions until email is verified.
 - ✅ **Type Safety Refactor**: Massively reduced `any` usage in services and components.

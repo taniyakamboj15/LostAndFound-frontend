@@ -1,6 +1,5 @@
 import { InfoIcon } from '@assets/svg';
 import { useNavigate } from 'react-router-dom';
-import * as yup from 'yup';
 import { useForm, useFieldArray, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Input, Select, Textarea, Card } from '@components/ui';
@@ -8,7 +7,7 @@ import { ITEM_CATEGORIES } from '@constants/categories';
 import { useCreateReport } from '@hooks/useReports';
 import { useAuth } from '@hooks/useAuth';
 import { ComponentErrorBoundary } from '@components/feedback';
-import { CreateReportFormData, CreateReportFormValues } from '../types/createReport.types';
+import {  CreateReportFormValues } from '../types/createReport.types';
 import { CreateLostReportData } from '../types/report.types';
 import { createReportFormSchema } from '../validators';
 

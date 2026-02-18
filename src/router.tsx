@@ -32,11 +32,6 @@ const UploadProof = lazy(() => import('@pages/UploadProof'));
 const VerifyEmail = lazy(() => import('@pages/VerifyEmail'));
 
 import {
-  itemsListLoader,
-  itemDetailLoader,
-  claimDetailLoader,
-  reportDetailLoader,
-  pickupDetailLoader,
   analyticsLoader,
   storageLoader,
   usersLoader,
@@ -86,7 +81,6 @@ export const router = createBrowserRouter([
       {
         path: '/items',
         element: <SuspenseWrapper fallback={<ShimmerList />}><ProtectedRoute><ItemsList /></ProtectedRoute></SuspenseWrapper>,
-        loader: itemsListLoader,
       },
       {
         path: '/items/create',
@@ -96,13 +90,11 @@ export const router = createBrowserRouter([
       {
         path: '/items/:id/edit',
         element: <SuspenseWrapper fallback={<ShimmerDetail />}><ProtectedRoute><EditItem /></ProtectedRoute></SuspenseWrapper>,
-        loader: itemDetailLoader,
         action: updateItemAction,
       },
       {
         path: '/items/:id',
         element: <SuspenseWrapper fallback={<ShimmerDetail />}><ItemDetail /></SuspenseWrapper>,
-        loader: itemDetailLoader,
       },
       {
         path: '/claims',
@@ -117,7 +109,6 @@ export const router = createBrowserRouter([
       {
         path: '/claims/:id',
         element: <SuspenseWrapper fallback={<ShimmerDetail />}><ProtectedRoute><ClaimDetail /></ProtectedRoute></SuspenseWrapper>,
-        loader: claimDetailLoader,
         action: verifyClaimAction,
       },
       {
@@ -137,7 +128,6 @@ export const router = createBrowserRouter([
       {
         path: '/reports/:id',
         element: <SuspenseWrapper fallback={<ShimmerDetail />}><ProtectedRoute><ReportDetail /></ProtectedRoute></SuspenseWrapper>,
-        loader: reportDetailLoader,
       },
       {
         path: '/pickups',
@@ -147,7 +137,6 @@ export const router = createBrowserRouter([
       {
         path: '/pickups/:id',
         element: <SuspenseWrapper fallback={<ShimmerDetail />}><ProtectedRoute><PickupDetail /></ProtectedRoute></SuspenseWrapper>,
-        loader: pickupDetailLoader,
         action: completePickupAction,
       },
       {

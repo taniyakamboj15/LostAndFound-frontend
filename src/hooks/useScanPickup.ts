@@ -54,7 +54,7 @@ export const useScanPickup = (isOpen: boolean, onVerifySuccess: (pickupData: Pic
   }, [handleVerification]);
 
   const onScanFailure = useCallback((_error: unknown) => {
-    // console.warn(`Code scan error = ${error}`);
+    // Handle scan failure silently
   }, []);
 
   useEffect(() => {

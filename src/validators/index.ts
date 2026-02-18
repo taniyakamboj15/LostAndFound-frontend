@@ -127,7 +127,6 @@ export const lostReportSchema = yup.object({
     .required(),
 });
 
-// Senior Dev Practice: Refine schema for the specific form structure
 export const createReportFormSchema = lostReportSchema.shape({
   identifyingFeatures: yup.array().of(
     yup.object({
