@@ -5,6 +5,7 @@ import { BUTTON_VARIANTS, BUTTON_SIZES, CARD_PADDINGS, MODAL_SIZES, SPINNER_SIZE
 import { variantStyles as badgeVariantStyles, sizeStyles as badgeSizeStyles } from '@constants/badge';
 import { Item } from './item.types';
 import { Claim } from './claim.types';
+import { Pickup } from './pickup.types';
 
 // Generic UI Types
 export type BadgeVariant = keyof typeof badgeVariantStyles;
@@ -126,7 +127,7 @@ export interface PickupSchedulerProps {
 export interface ScanPickupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onVerifySuccess: (pickupData: any) => void; // Using any for Pickup to avoid circular dependency or just import it
+  onVerifySuccess: (pickupData: Pickup) => void;
 }
 
 export interface ErrorBoundaryProps {

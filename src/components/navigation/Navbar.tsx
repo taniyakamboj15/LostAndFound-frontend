@@ -12,6 +12,7 @@ import { cn } from '@utils/helpers';
 import { PUBLIC_NAV_ITEMS, PROTECTED_NAV_ITEMS, STAFF_NAV_ITEMS, ADMIN_NAV_ITEMS } from '@constants/ui';
 import { authService } from '@services/auth.service';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@utils/errors';
 
 const Navbar = () => {
   const location = useLocation();
@@ -33,8 +34,9 @@ const Navbar = () => {
       } else {
         toast.error('User email not found');
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to send verification email');
+    } catch (error:unknown) {
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage || 'Failed to send verification email');
     } finally {
       setIsResending(false);
     }

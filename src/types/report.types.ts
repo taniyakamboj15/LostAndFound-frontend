@@ -61,6 +61,7 @@ export interface ReportFilterState {
   category?: ItemCategory | '';
   dateLostFrom?: string;
   dateLostTo?: string;
+  [key: string]: unknown;
 }
 
 // Lost Report Response

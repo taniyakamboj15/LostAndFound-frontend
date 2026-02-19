@@ -81,4 +81,5 @@ export interface AvailableSlotsResponse {
 export interface PickupFilters {
   isCompleted?: string;
   pickupDate?: string;
+  [key: string]: string | undefined;
 }

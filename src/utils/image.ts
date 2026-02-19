@@ -10,14 +10,9 @@ import { API_BASE_URL } from '@constants/api';
 export const formatImageUrl = (path?: string): string => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  
-  // Clean the path of any double slashes if needed
+
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${API_BASE_URL}${cleanPath}`;
 };
 
-/**
- * Alias for formatImageUrl to maintain backward compatibility if needed
- * or for more semantic usage with items.
- */
 export const getItemImageUrl = formatImageUrl;

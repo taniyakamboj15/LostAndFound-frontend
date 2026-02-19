@@ -79,6 +79,7 @@ export interface ClaimFilterState {
   keyword?: string;
   status?: ClaimStatus | '';
   date?: string;
+  [key: string]: unknown;
 }
 
 // Claim Response

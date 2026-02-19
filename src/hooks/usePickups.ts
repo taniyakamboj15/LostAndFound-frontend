@@ -4,13 +4,10 @@ import { getErrorMessage } from '@utils/errors';
 import { pickupService } from '@services/pickup.service';
 import { useToast } from './useToast';
 import { useQueryFilters } from './useQueryFilters';
-import type { Pickup } from '../types/pickup.types';
+import type { Pickup, PickupFilters } from '../types/pickup.types';
 import { useAuth } from './useAuth';
 
-interface PickupFilters {
-  isCompleted?: string;
-  pickupDate?: string;
-}
+
 
 export const usePickups = () => {
   const { user } = useAuth();

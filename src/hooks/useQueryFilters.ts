@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from './useDebounce';
 
-export function useQueryFilters<T extends Record<string, any>>(
+export function useQueryFilters<T extends Record<string, unknown>>(
   initialFilters: T,
   delay = 500,
   preserveParams = false
