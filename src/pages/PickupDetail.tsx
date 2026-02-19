@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import BackButton from '@components/ui/BackButton';
-import { Calendar, Clock, MapPin, Package, ShieldCheck, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Package, ShieldCheck, CheckCircle, AlertCircle, QrCode } from 'lucide-react';
 import { Card, Badge, Button, Spinner } from '@components/ui';
 import { usePickupDetail } from '@hooks/usePickups';
 import { formatDate } from '@utils/formatters';
@@ -12,11 +12,14 @@ import PickupQRCode from '@components/pickups/PickupQRCode';
 import PickupLogistics from '@components/pickups/PickupLogistics';
 import PickupItemInfo from '@components/pickups/PickupItemInfo';
 import PickupClaimantInfo from '@components/pickups/PickupClaimantInfo';
+import ScanPickupModal from '@components/claims/ScanPickupModal';
+import { useState } from 'react';
 
 const PickupDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { pickup, isLoading, isCompleting, completePickup } = usePickupDetail(id);
+  const { pickup, isLoading, isCompleting, completePickup, refresh } = usePickupDetail(id);
   const { isStaff, isAdmin } = useAuth();
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
 
   if (isLoading || !pickup) {
     return (
@@ -26,8 +29,6 @@ const PickupDetail = () => {
       </div>
     );
   }
-
-  const canComplete = (isStaff() || isAdmin()) && !pickup.isCompleted;
 
   return (
     <ComponentErrorBoundary title="Pickup Detail Error">
@@ -62,7 +63,9 @@ const PickupDetail = () => {
                         <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/30">
                           {pickup.isCompleted ? 'Historical Record' : 'Active Schedule'}
                         </span>
-                        <span className="text-blue-200 text-sm font-medium">Ref: #{pickup.referenceCode}</span>
+                        {!isStaff() && !isAdmin() && (
+                          <span className="text-blue-200 text-sm font-medium">Ref: #{pickup.referenceCode}</span>
+                        )}
                      </div>
                      <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
                        {pickup.itemId?.description || 'Item Handoff'}
@@ -80,7 +83,7 @@ const PickupDetail = () => {
                   </div>
 
                   {/* QR Code Segment for Claimant */}
-                  {!pickup.isCompleted && (
+                  {!pickup.isCompleted && !isStaff() && !isAdmin() && (
                     <motion.div 
                       whileHover={{ scale: 1.05 }}
                       className="bg-white p-4 rounded-2xl shadow-2xl"
@@ -111,25 +114,41 @@ const PickupDetail = () => {
                      <span className="font-bold text-gray-900">Yes (System Checked)</span>
                   </div>
                </div>
-               <div className="p-8 flex items-center justify-center">
-                  {canComplete ? (
-                     <Button 
-                       variant="primary" 
-                       onClick={() => completePickup(pickup.referenceCode)} 
-                       isLoading={isCompleting}
-                       className="w-full h-12 rounded-xl shadow-lg shadow-blue-200"
-                     >
-                       Mark as Handed Over
-                     </Button>
+                <div className="p-8 flex items-center justify-center">
+                  {(isStaff() || isAdmin()) ? (
+                     pickup.isCompleted ? (
+                        <div className="text-center">
+                           <p className="text-xs text-gray-400 font-bold uppercase tracking-tighter mb-1">Handed Over On</p>
+                           <p className="font-bold text-gray-900">{formatDate(pickup.completedAt || '')}</p>
+                        </div>
+                     ) : pickup.isVerified ? (
+                        <Button 
+                          variant="primary" 
+                          onClick={() => completePickup(pickup.referenceCode)} 
+                          isLoading={isCompleting}
+                          className="w-full h-12 rounded-xl shadow-lg shadow-blue-200"
+                        >
+                          Mark as Handed Over
+                        </Button>
+                     ) : (
+                        <Button 
+                          variant="primary" 
+                          onClick={() => setIsScanModalOpen(true)}
+                          className="w-full h-12 rounded-xl shadow-lg shadow-blue-600/20 bg-blue-600 hover:bg-blue-700"
+                        >
+                          <QrCode className="h-5 w-5 mr-2" />
+                          Verify Pickup
+                        </Button>
+                     )
                   ) : pickup.isCompleted ? (
                      <div className="text-center">
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-tighter mb-1">Handed Over On</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-tighter mb-1">Collected On</p>
                         <p className="font-bold text-gray-900">{formatDate(pickup.completedAt || '')}</p>
                      </div>
                   ) : (
-                     <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100">
-                        <AlertCircle className="h-4 w-4" />
-                        <span className="text-xs font-bold">Scanning mode only</span>
+                     <div className="flex flex-col items-center gap-2 text-blue-600 bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100 shadow-sm">
+                        <Clock className="h-5 w-5 animate-pulse" />
+                        <span className="text-sm font-bold tracking-tight">Ready for Collection</span>
                      </div>
                   )}
                </div>
@@ -172,6 +191,15 @@ const PickupDetail = () => {
           </Card>
         )}
       </motion.div>
+
+      <ScanPickupModal 
+        isOpen={isScanModalOpen}
+        onClose={() => setIsScanModalOpen(false)}
+        onVerifySuccess={() => {
+          setIsScanModalOpen(false);
+          refresh();
+        }}
+      />
     </ComponentErrorBoundary>
   );
 };
