@@ -1,6 +1,7 @@
 import { useAuth } from '@hooks/useAuth';
 import { Card, Spinner } from '@components/ui';
-import { Package, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Package, Users, CheckCircle, Clock, AlertCircle, ArrowRight, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ROUTES } from '../constants/routes';
@@ -148,79 +149,113 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Activity */}
-          <Card>
-            <div className="mb-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Items Found</h2>
+          <Card className="border-none shadow-lg bg-white overflow-hidden">
+            <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-blue-500" />
+                Recent Items Found
+              </h2>
               <Link 
                 to={user?.role === 'CLAIMANT' ? '/search' : '/items'} 
-                className="text-sm text-primary-600 hover:text-primary-700"
+                className="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
               >
-                View all
+                View Gallery
               </Link>
             </div>
-            <div className="space-y-4">
+            <div className="p-2">
               {recentItems.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No recent items found.</p>
+                <div className="text-center py-12">
+                  <Package className="h-12 w-12 text-gray-300 mx-auto mb-3 stroke-[1.5]" />
+                  <p className="text-gray-400 font-medium">No recent activity detected.</p>
+                </div>
               ) : (
-                recentItems.map((item) => (
-                  <div key={item._id} className="flex items-start gap-3 pb-4 border-b last:border-0">
-                    <div className="mt-1">
-                        <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden">
-                          {item.photos && item.photos.length > 0 ? (
-                            <img 
-                              src={getItemImageUrl(item.photos[0].path) || ''} 
-                              alt={item.category} 
-                              className="h-full w-full object-cover" 
-                            />
-                          ) : (
-                            <Package className="h-5 w-5 text-gray-400" />
-                          )}
-                        </div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{item.description}</p>
-                      <div className="flex justify-between items-center mt-1">
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{item.category}</span>
-                        <span className="text-xs text-gray-400">{formatDistanceToNow(new Date(item.dateFound), { addSuffix: true })}</span>
+                <div className="divide-y divide-gray-50">
+                  {recentItems.map((item, idx) => (
+                    <motion.div 
+                      key={item._id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="group flex items-center gap-4 p-4 hover:bg-gray-50 transition-all rounded-xl"
+                    >
+                      <div className="relative h-14 w-14 rounded-xl bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm group-hover:scale-110 transition-transform">
+                        {item.photos && item.photos.length > 0 ? (
+                          <img 
+                            src={getItemImageUrl(item.photos[0].path) || ''} 
+                            alt={item.category} 
+                            className="h-full w-full object-cover" 
+                          />
+                        ) : (
+                          <Package className="h-6 w-6 text-gray-400" />
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))
+                      <div className="flex-1 min-w-0">
+                        <Link to={`/items/${item._id}`} className="text-sm font-bold text-gray-900 truncate block group-hover:text-blue-600 transition-colors">
+                          {item.description}
+                        </Link>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                            {item.category}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-medium">
+                            {formatDistanceToNow(new Date(item.dateFound), { addSuffix: true })}
+                          </span>
+                        </div>
+                      </div>
+                      <Link to={`/items/${item._id}`} className="p-2 opacity-0 group-hover:opacity-100 bg-white shadow-sm rounded-lg border border-gray-100 transition-all">
+                        <ArrowRight className="h-4 w-4 text-blue-600" />
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
               )}
             </div>
           </Card>
 
           {/* Quick Actions */}
-          <Card>
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
-            </div>
+          <Card className="border-none shadow-lg bg-white p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              Quick Actions
+            </h2>
             <div className="grid grid-cols-2 gap-4">
               {(isAdmin() || isStaff()) && (
                 <>
-                  <Link to="/items/create" className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors text-left block">
-                    <Package className="h-6 w-6 text-primary-600 mb-2" />
-                    <p className="font-medium text-gray-900">Register Item</p>
-                    <p className="text-xs text-gray-600 mt-1">Add found item</p>
+                  <Link to="/items/create" className="group p-5 bg-blue-50/50 rounded-2xl hover:bg-blue-50 transition-all border border-blue-100/30 text-left block relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                       <Package className="h-12 w-12" />
+                    </div>
+                    <Package className="h-7 w-7 text-blue-600 mb-3" />
+                    <p className="font-extrabold text-gray-900">Register Item</p>
+                    <p className="text-xs text-blue-600 font-medium mt-1">Add new found object</p>
                   </Link>
-                  <Link to="/claims" className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left block">
-                    <Users className="h-6 w-6 text-blue-600 mb-2" />
-                    <p className="font-medium text-gray-900">Review Claims</p>
-                    <p className="text-xs text-gray-600 mt-1">Verify pending</p>
+                  <Link to="/claims" className="group p-5 bg-purple-50/50 rounded-2xl hover:bg-purple-50 transition-all border border-purple-100/30 text-left block relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                       <Users className="h-12 w-12" />
+                    </div>
+                    <Users className="h-7 w-7 text-purple-600 mb-3" />
+                    <p className="font-extrabold text-gray-900">Review Claims</p>
+                    <p className="text-xs text-purple-600 font-medium mt-1">Verify ownership</p>
                   </Link>
                 </>
               )}
-              <Link to={ROUTES.HOME} className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors text-left block">
-                <CheckCircle className="h-6 w-6 text-green-600 mb-2" />
-                <p className="font-medium text-gray-900">Search Items</p>
-                <p className="text-xs text-gray-600 mt-1">Find lost items</p>
+              <Link to={ROUTES.HOME} className="group p-5 bg-green-50/50 rounded-2xl hover:bg-green-50 transition-all border border-green-100/30 text-left block relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Search className="h-12 w-12" />
+                </div>
+                <Search className="h-7 w-7 text-green-600 mb-3" />
+                <p className="font-extrabold text-gray-900">Search Items</p>
+                <p className="text-xs text-green-600 font-medium mt-1">Find lost belongings</p>
               </Link>
-              <Link to={ROUTES.LOST_REPORT} className="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors text-left block">
-                <AlertCircle className="h-6 w-6 text-orange-600 mb-2" />
-                <p className="font-medium text-gray-900">Report Lost</p>
-                <p className="text-xs text-gray-600 mt-1">Submit report</p>
+              <Link to={ROUTES.LOST_REPORT} className="group p-5 bg-orange-50/50 rounded-2xl hover:bg-orange-50 transition-all border border-orange-100/30 text-left block relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <AlertCircle className="h-12 w-12" />
+                </div>
+                <AlertCircle className="h-7 w-7 text-orange-600 mb-3" />
+                <p className="font-extrabold text-gray-900">Report Lost</p>
+                <p className="text-xs text-orange-600 font-medium mt-1">Setup auto-match</p>
               </Link>
             </div>
           </Card>
@@ -250,19 +285,36 @@ const Dashboard = () => {
                 </div>
               )}
               
-              {metrics.pendingClaims > 0 ? (
-                <Link to="/claims" className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors">
-                  <Clock className="h-5 w-5 text-orange-600 mt-0.5" />
+              {metrics.pendingReviewClaims > 0 ? (
+                <Link to="/claims?status=FILED" className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-orange-900">{metrics.pendingClaims} claims pending review</p>
-                    <p className="text-sm text-orange-700">Awaiting staff verification</p>
+                    <p className="text-sm font-medium text-red-900">{metrics.pendingReviewClaims} claims urgent review</p>
+                    <p className="text-sm text-red-700">Awaiting identity or proof verification</p>
                   </div>
                 </Link>
               ) : (
-                  <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-green-900">All claims reviewed</p>
+                    <p className="text-sm font-medium text-green-900">No urgent claims to review</p>
+                  </div>
+                </div>
+              )}
+              
+              {metrics.readyForHandoverClaims > 0 ? (
+                <Link to="/claims?status=VERIFIED" className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors">
+                  <Clock className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-orange-900">{metrics.readyForHandoverClaims} claims ready for handover</p>
+                    <p className="text-sm text-orange-700">Paid and verified items awaiting pickup</p>
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">No items ready for handover</p>
                   </div>
                 </div>
               )}

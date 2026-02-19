@@ -7,6 +7,14 @@ export interface Pickup {
       _id: string;
       description: string;
     };
+    paymentStatus?: string;
+    feeDetails?: {
+      totalAmount?: number;
+      handlingFee?: number;
+      storageFee?: number;
+      paidAt?: string;
+      transactionId?: string;
+    };
   };
   claimantId: {
     _id: string;
@@ -65,10 +73,13 @@ export interface PickupResponse {
   data: Pickup;
 }
 
+import { PaginationMeta } from './api.types';
+
 // Pickups List Response
 export interface PickupsListResponse {
   success: boolean;
   data: Pickup[];
+  pagination?: PaginationMeta;
 }
 
 // Available Slots Response
@@ -81,5 +92,9 @@ export interface AvailableSlotsResponse {
 export interface PickupFilters {
   isCompleted?: string;
   pickupDate?: string;
-  [key: string]: string | undefined;
+  keyword?: string;
+  month?: string;
+  page?: number;
+  limit?: number;
+  [key: string]: string | number | undefined;
 }

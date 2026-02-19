@@ -8,9 +8,19 @@ export async function analyticsLoader() {
       analyticsService.getTrends(),
     ]);
 
+
+    let paymentAnalytics = null;
+    try {
+      const payRes = await analyticsService.getPaymentAnalytics();
+      paymentAnalytics = payRes.data;
+    } catch {
+      // Non-admin users will get a 403 here
+    }
+
     return {
       metrics: metricsRes.data,
       trends: trendsRes.data,
+      paymentAnalytics,
       error: null,
     };
   } catch (error: unknown) {
@@ -18,6 +28,7 @@ export async function analyticsLoader() {
     return {
       metrics: null,
       trends: [],
+      paymentAnalytics: null,
       error: getErrorMessage(error),
     };
   }

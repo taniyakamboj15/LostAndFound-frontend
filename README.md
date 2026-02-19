@@ -37,14 +37,11 @@ This repository contains the **Frontend** application, built with React, TypeScr
   - Visual occupancy indicators with color-coded progress bars
   - Prevents over-capacity additions
   - Real-time capacity updates
-- **Handoff Scheduling**: Claimants can book time slots for item pickup; Staff verifies via QR/Reference code.
-  - **New Calendar View**: Interactive monthly calendar showing all scheduled pickups
-  - **Toggle Views**: Switch between List View and Calendar View seamlessly
-  - **Smart Claimant Display**: Shows "You" for user's own pickups, claimant names for staff
-  - Month-by-month navigation in Calendar View
-- **Unclaimed Item Disposition**: Workflow to donate, auction, or dispose of items after the retention period expires.
-- **Dashboard Analytics**: Insights on items reported, matched rates, average recovery time, and category breakdowns.
-- **Notification System**: Alerts for potential matches, claim status updates, and retention expiry warnings.
+- **Dashboard Analytics**: Insights on items reported, matched rates, and **payment revenue visualization**.
+- **Secure Payment Integration**: Integrated with **Stripe** for handling recovery fees.
+  - **Automated Fee Calculation**: Handling fee (₹40) + Storage fee (₹5/day).
+  - **Payment-Gate for Pickups**: Users must complete payment before they can schedule a pickup. 
+- **Notification System**: Alerts for potential matches, claim status updates, and **payment received confirmations**.
 - **Modular Architecture**: Clean separation of concerns with reusable components.
   - Header, Card, and Calendar components for Pickups
   - Centralized UI constants and type definitions
@@ -60,6 +57,7 @@ This repository contains the **Frontend** application, built with React, TypeScr
 - **Styling**: Tailwind CSS, Framer Motion
 - **Forms**: React Hook Form with Yup validation
 - **HTTP Client**: Axios
+- **Payments**: Stripe (Stripe Elements)
 
 ## 📁 Project Structure
 
@@ -79,12 +77,16 @@ graph LR
     C --> E[Upload Proof]
     E --> F[Wait for Verification]
     F --> G{Verified?}
-    G -->|Yes| H[Book Pickup Slot]
+    G -->|Yes| P[View Fee Breakdown]
+    P --> Q[Complete Stripe Payment]
+    Q --> H[Book Pickup Slot]
     G -->|No| I[Claim Rejected]
     H --> J[Receive QR Code]
     J --> K[Visit Pickup Location]
     K --> L[Staff Scans QR]
-    L --> M[Item Returned]
+    L --> M{Payment Verified?}
+    M -->|Yes| N[Item Returned]
+    M -->|No| O[Payment Required Message]
 ```
 
 **Step-by-Step:**
@@ -232,6 +234,22 @@ src/components/
     ```
 
 ## 🆕 Recent Updates (February 2026)
+
+### Today's Update (Thursday, February 19, 2026) 💳
+> **Featured**: Automated Storage Charges & Stripe Payment Flow
+
+#### 💰 Recovery Fee System
+- ✅ **Dynamic Storage Charges**: Implemented automated fee calculation based on storage duration (₹5/day) plus a base handling fee (₹40).
+- ✅ **Stripe Checkout Integration**: Added a secure checkout flow using **Stripe Elements** for processing recovery fees.
+- ✅ **Payment-First Pickup Flow**: Redesigned the claim journey to ensure users complete their payment *before* the pickup scheduling option is unlocked.
+
+#### 🔎 Lost Reports UI Modernization
+- ✅ **Premium Reports List**: Redesigned with glassmorphism, animated filter bars, and staggered entry animations.
+- ✅ **Enhanced Matching UI**: Redesigned match cards with confidence progress bars and visual indicators for match reasons.
+
+#### 🛡️ Security & Validation
+- ✅ **Backend-Enforced Verification**: Added logic to `PickupService` to block handovers if the associated payment is not verified.
+- ✅ **Visual Handover Alerts**: Prominent UI warnings for staff if a claimant attempts to pick up an item without successful payment.
 
 ### Wed Update (February 18, 2026) ✨ - `wed-branch`
 > **Featured**: Enhanced Documentation & AI Chat Integration

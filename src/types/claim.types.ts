@@ -32,6 +32,15 @@ export interface Claim {
   } | string;
   verifiedAt?: string;
   rejectionReason?: string;
+  paymentStatus?: 'PENDING' | 'PAID' | 'FAILED';
+  feeDetails?: {
+    handlingFee: number;
+    storageFee: number;
+    daysStored: number;
+    totalAmount: number;
+    paidAt?: string;
+    transactionId?: string;
+  };
   filedAt?: string; // Some parts of the UI use filedAt
   createdAt: string;
   updatedAt: string;
@@ -70,6 +79,7 @@ export interface ClaimFilters {
   keyword?: string;
   status?: ClaimStatus;
   itemId?: string;
+  date?: string;
   page?: number;
   limit?: number;
 }

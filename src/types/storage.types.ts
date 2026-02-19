@@ -12,6 +12,8 @@ export interface Storage {
   updatedAt: string;
 }
 
+export type StorageLocation = Storage;
+
 // Create Storage Data
 export interface CreateStorageData {
   name: string;

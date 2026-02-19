@@ -9,6 +9,8 @@ export interface AnalyticsMetrics {
   matchSuccessRate: number;
   averageRecoveryTime: number;
   pendingClaims: number;
+  pendingReviewClaims: number;
+  readyForHandoverClaims: number;
   expiringItems: number;
   categoryBreakdown: Record<ItemCategory, number>;
 }
@@ -64,5 +66,46 @@ export interface DispositionStatsResponse {
 export interface AnalyticsLoaderData {
   metrics: AnalyticsMetrics | null;
   trends: TrendDataPoint[];
+  paymentAnalytics: PaymentAnalytics | null;
   error: string | null;
+}
+
+// ─── Payment Analytics Types ────────────────────────────────────────────
+
+export interface MonthlyRevenue {
+  month: string;     // "YYYY-MM"
+  revenue: number;
+  count: number;
+}
+
+export interface TopPayingUser {
+  userId: string;
+  name: string;
+  email: string;
+  totalPaid: number;
+  claimCount: number;
+}
+
+export interface RecentPayment {
+  claimId: string;
+  claimantName: string;
+  claimantEmail: string;
+  amount: number;
+  paidAt: string | Date;
+  itemDescription: string;
+}
+
+export interface PaymentAnalytics {
+  totalRevenue: number;
+  totalPaidClaims: number;
+  totalPendingPaymentClaims: number;
+  averageFee: number;
+  revenueByMonth: MonthlyRevenue[];
+  topPayingUsers: TopPayingUser[];
+  recentPayments: RecentPayment[];
+}
+
+export interface PaymentAnalyticsResponse {
+  success: boolean;
+  data: PaymentAnalytics;
 }

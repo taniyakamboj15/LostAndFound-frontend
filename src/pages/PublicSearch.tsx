@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, MapPin, Calendar, Package } from 'lucide-react';
-import { Card, Input, Button, Badge, Spinner } from '@components/ui';
-import { ItemCategory, ITEM_CATEGORIES } from '@constants/categories';
-import { formatDate } from '@utils/formatters';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Filter, Package } from 'lucide-react';
+import { Card, Input, Button, Spinner } from '@components/ui';
+import { ITEM_CATEGORIES } from '@constants/categories';
 import { usePublicSearch } from '@hooks/usePublicSearch';
 import { ComponentErrorBoundary } from '@components/feedback';
-import { getItemImageUrl } from '@utils/image';
+import { ItemStatus } from '@constants/status';
+import ItemCard from '@components/items/ItemCard';
 import { ROUTES } from '@constants/routes';
+import { Link } from 'react-router-dom';
 
 const PublicSearch = () => {
   const { items, isLoading, error, filters, updateFilters, clearFilters, search } = usePublicSearch();
@@ -21,214 +22,240 @@ const PublicSearch = () => {
     search(filters);
   }, [filters, search]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <ComponentErrorBoundary title="Public Search Error">
-      <div className="space-y-6">
+      <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Find Your Lost Items</h1>
-          <p className="text-gray-600 mt-2 text-lg">
-            Search through our database of found items
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-4"
+        >
+          <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">
+            Find Your <span className="text-blue-600">Lost Items</span>
+          </h1>
+          <p className="text-gray-500 text-xl max-w-2xl mx-auto leading-relaxed">
+            Easily search through our campus-wide database of found belongings.
           </p>
-        </div>
+        </motion.div>
 
         {/* Search Bar */}
-        <Card>
-          <div className="space-y-4">
-            <div className="flex gap-3">
-              <div className="flex-1">
+        <Card className="p-1 border-none bg-white shadow-xl shadow-blue-50/50">
+          <div className="p-4 space-y-4">
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1 relative">
                 <Input
                   placeholder="Search by keyword, description, or location..."
                   value={filters.keyword}
                   onChange={(e) => handleFilterChange('keyword', e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   fullWidth
+                  className="pl-12 h-14 bg-gray-50 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500"
                 />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               </div>
-              <Button
-                variant="primary"
-                onClick={handleSearch}
-                isLoading={isLoading}
-              >
-                <Search className="h-5 w-5 mr-2" />
-                Search
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="h-5 w-5 mr-2" />
-                Filters
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="primary"
+                  onClick={handleSearch}
+                  isLoading={isLoading}
+                  size="lg"
+                  className="h-14 px-8 shadow-lg shadow-blue-100"
+                >
+                  Search 
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  size="lg"
+                  className="h-14"
+                >
+                  <Filter className="h-5 w-5 mr-2" />
+                  Advanced
+                </Button>
+              </div>
             </div>
 
             {/* Advanced Filters */}
-            {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <select
-                    value={filters.category}
-                    onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="">All Categories</option>
-                    {Object.entries(ITEM_CATEGORIES).map(([key, category]) => (
-                      <option key={key} value={key}>
-                        {category.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-gray-100">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
+                        Category
+                      </label>
+                      <select
+                        value={filters.category}
+                        onChange={(e) => handleFilterChange('category', e.target.value)}
+                        className="w-full h-11 px-4 bg-gray-50 border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      >
+                        <option value="">All Types</option>
+                        {Object.entries(ITEM_CATEGORIES).map(([key, category]) => (
+                          <option key={key} value={key}>
+                            {category.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
-                  </label>
-                  <Input
-                    placeholder="e.g., Main Library"
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
-                    fullWidth
-                  />
-                </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
+                        Location
+                      </label>
+                      <Input
+                        placeholder="e.g., Main Library"
+                        value={filters.location}
+                        onChange={(e) => handleFilterChange('location', e.target.value)}
+                        fullWidth
+                        className="h-11 bg-gray-50 border-transparent"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date From
-                  </label>
-                  <Input
-                    type="date"
-                    value={filters.dateFrom}
-                    onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-                    fullWidth
-                  />
-                </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
+                        From Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={filters.dateFrom}
+                        onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                        fullWidth
+                        className="h-11 bg-gray-50 border-transparent"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date To
-                  </label>
-                  <Input
-                    type="date"
-                    value={filters.dateTo}
-                    onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-                    fullWidth
-                  />
-                </div>
-              </div>
-            )}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
+                        To Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={filters.dateTo}
+                        onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                        fullWidth
+                        className="h-11 bg-gray-50 border-transparent"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </Card>
 
+        {/* Results Info */}
+        {!isLoading && items.length > 0 && (
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-lg font-bold text-gray-900">
+              Discovered <span className="text-blue-600">{items.length}</span> Objects
+            </h2>
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-400 hover:text-red-500">
+              Reset Search
+            </Button>
+          </div>
+        )}
+
+        {/* Results Grid */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Spinner size="lg" />
+          </div>
+        ) : items.length > 0 ? (
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {items.map((item) => (
+              <motion.div key={item._id} variants={itemVariants}>
+                <ItemCard 
+                  item={{
+                    ...item,
+                    status: ItemStatus.AVAILABLE, // Public items are expected to be available
+                  } as any} 
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          /* Empty State */
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="py-16"
+          >
+            <Card className="max-w-md mx-auto text-center p-12 border-none shadow-sm bg-white/50">
+              <div className="bg-gray-100 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Package className="h-10 w-10 text-gray-400 stroke-[1.5]" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                No items found
+              </h3>
+              <p className="text-gray-500 mb-8 leading-relaxed">
+                We couldn't find anything matching your search. Try different keywords or check out categories.
+              </p>
+              <Button variant="primary" onClick={clearFilters} fullWidth size="lg">
+                Start Over
+              </Button>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Error State */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium">
             {error}
           </div>
         )}
 
-        {/* Results Count */}
-        <div className="flex items-center justify-between">
-          <p className="text-gray-600">
-            Found <span className="font-semibold text-gray-900">{items.length}</span> items
-          </p>
-        </div>
-
-        {/* Results Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Spinner size="lg" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item) => (
-              <Card key={item._id} hover className="cursor-pointer">
-                {/* Image Placeholder */}
-                 <div className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    {item.photos && item.photos.length > 0 ? (
-                       <img 
-                        src={getItemImageUrl(item.photos[0].path) || ''} 
-                        alt={item.description} 
-                        className="w-full h-full object-cover" 
-                       />
-                    ) : (
-                       <Package className="h-12 w-12 text-gray-400" />
-                    )}
-                 </div>
-
-                {/* Category Badge */}
-                <div className="mb-3">
-                  <Badge
-                    variant="info"
-                    className={`bg-${ITEM_CATEGORIES[item.category as ItemCategory]?.color || 'gray'}-100 text-${ITEM_CATEGORIES[item.category as ItemCategory]?.color || 'gray'}-800`}
-                  >
-                    {ITEM_CATEGORIES[item.category as ItemCategory]?.label || item.category}
-                  </Badge>
-                </div>
-
-                {/* Description */}
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {item.description}
-                </h3>
-
-                {/* Location */}
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                  <MapPin className="h-4 w-4" />
-                  <span className="line-clamp-1">{item.locationFound}</span>
-                </div>
-
-                {/* Date */}
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  <span>Found on {formatDate(item.dateFound)}</span>
-                </div>
-
-                {/* Action Button */}
-                <div className="mt-4 pt-4 border-t">
-                  <Link to={`/items/${item._id}`}>
-                    <Button variant="outline" size="sm" fullWidth>
-                      View Details
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && items.length === 0 && (
-          <Card className="text-center py-12">
-            <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No items found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Try adjusting your search criteria or filters
-            </p>
-            <Button variant="primary" onClick={clearFilters}>Clear Filters</Button>
-          </Card>
-        )}
-
         {/* CTA Section */}
-        <Card className="bg-gradient-to-r from-primary-50 to-secondary-50">
-          <div className="text-center py-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Can't find your item?
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Submit a lost item report and we'll notify you when we find a match
-            </p>
-            <Link to={ROUTES.LOST_REPORT}>
-            <Button variant="primary" size="lg">
-              Submit Lost Report
-            </Button>
-            </Link>
-          </div>
-        </Card>
+        <motion.div
+           initial={{ opacity: 0, y: 20 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+        >
+          <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 border-none overflow-hidden relative group">
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-20 transition-opacity" />
+            <div className="text-center py-12 px-6 relative z-10">
+              <div className="inline-flex p-3 bg-white/20 backdrop-blur-md rounded-2xl mb-6 text-white">
+                <Package className="h-8 w-8" />
+              </div>
+              <h2 className="text-3xl font-extrabold text-white mb-3">
+                Still missing something?
+              </h2>
+              <p className="text-blue-100 mb-8 max-w-lg mx-auto text-lg">
+                Submit a Lost Report. Our automated matching system will keep scanning and notify you instantly.
+              </p>
+              <Link to={ROUTES.LOST_REPORT}>
+                <Button variant="outline" size="lg" className="bg-white text-blue-700 border-none hover:bg-blue-50 px-10 h-14 font-bold shadow-xl">
+                  File Your Report Now
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </motion.div>
       </div>
     </ComponentErrorBoundary>
   );

@@ -98,4 +98,12 @@ export const API_ENDPOINTS = {
     MESSAGE: '/api/chat/message',
     SESSION: (sessionId: string) => `/api/chat/session/${sessionId}`,
   },
+
+  // Payments
+  PAYMENTS: {
+    FEE_BREAKDOWN: (claimId: string) => `/api/payments/fee-breakdown/${claimId}`,
+    CREATE_INTENT: '/api/payments/create-intent',
+    VERIFY: '/api/payments/verify',
+    ANALYTICS: '/api/analytics/payments',
+  },
 } as const;

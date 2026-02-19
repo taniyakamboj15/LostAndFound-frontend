@@ -1,189 +1,204 @@
 import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, FileText, Calendar, User as UserIcon, AlertCircle } from 'lucide-react';
-import { Card, Input, Button, Badge, Select, Spinner } from '@components/ui';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Filter, FileText, AlertCircle } from 'lucide-react';
+import { Card, Input, Button, Select, Spinner, Pagination } from '@components/ui';
 import { ClaimStatus, CLAIM_STATUS_LABELS } from '@constants/status';
-import { CLAIM_STATUS_VARIANT_MAP } from '@constants/ui';
-import { formatRelativeTime } from '@utils/formatters';
 import { useClaimsList } from '@hooks/useClaims';
-import { useAuth } from '@hooks/useAuth';
 import { ComponentErrorBoundary } from '@components/feedback';
+import ClaimCard from '@components/claims/ClaimCard';
 
 import { ClaimFilterState } from '../types/claim.types';
 
-
-
 const ClaimsList = () => {
-  const { claims, isLoading, error, filters, updateFilters, refresh } = useClaimsList();
-  const { user } = useAuth();
+  const { claims, isLoading, error, filters, updateFilters, refresh, pagination, handlePageChange } = useClaimsList();
   const [showFilters, setShowFilters] = useState(false);
 
-  const handleFilterChange = useCallback((key: keyof ClaimFilterState, value: string) => {
-    updateFilters({ ...filters, [key]: value });
+  const handleFilterChange = useCallback((key: keyof ClaimFilterState, value: string | number) => {
+    updateFilters({ ...filters, [key]: value, page: 1 });
   }, [filters, updateFilters]);
 
   const handleSearch = useCallback(() => {
     refresh();
   }, [refresh]);
 
-  const getStatusBadgeVariant = (status: ClaimStatus) => {
-    return CLAIM_STATUS_VARIANT_MAP[status as keyof typeof CLAIM_STATUS_VARIANT_MAP] || 'default';
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
   };
 
   return (
     <ComponentErrorBoundary title="Claims List Error">
-      <div className="space-y-6">
+      <div className="space-y-8 max-w-6xl mx-auto py-6 px-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Claims</h1>
-            <p className="text-gray-600 mt-1">Manage and track all item claims</p>
-          </div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Claim Requests</h1>
+            <p className="text-gray-500 mt-2 font-medium">Verify ownership and manage item retrieval requests</p>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3"
+          >
+            <div className="px-4 py-2 bg-blue-50 rounded-2xl border border-blue-100 flex items-center gap-2">
+               <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+               <span className="text-sm font-bold text-blue-700">{pagination.total} Total Claims</span>
+            </div>
+          </motion.div>
         </div>
 
         {/* Search and Filters */}
-        <Card>
-          <div className="space-y-4">
-            <div className="flex gap-3">
-              <div className="flex-1">
+        <Card className="p-1 border-none bg-white shadow-xl shadow-gray-100/50">
+          <div className="p-4 space-y-4">
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1 relative">
                 <Input
-                  placeholder="Search by claimant name, item description..."
+                  placeholder="Search claimant name, item description..."
                   value={filters.keyword || ''}
                   onChange={(e) => handleFilterChange('keyword', e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   fullWidth
+                  className="pl-12 h-12 bg-gray-50 border-transparent focus:bg-white"
                 />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               </div>
-              <Button variant="primary" onClick={handleSearch}>
-                <Search className="h-5 w-5 mr-2" />
-                Search
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="h-5 w-5 mr-2" />
-                Filters
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="primary" onClick={handleSearch} className="h-12 px-6">
+                  Search
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="h-12"
+                >
+                  <Filter className="h-5 w-5 mr-2" />
+                  Filters
+                </Button>
+              </div>
             </div>
 
             {/* Advanced Filters */}
-            {showFilters && (
-              <div className="pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select
-                  label="Status"
-                  value={filters.status || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value as ClaimStatus | '')}
-                  options={[
-                    { value: '', label: 'All Statuses' },
-                    ...Object.entries(CLAIM_STATUS_LABELS).map(([key, label]) => ({
-                      value: key,
-                      label,
-                    })),
-                  ]}
-                  fullWidth
-                />
-                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Filed Date</label>
-                  <input
-                    type="date"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={filters.date || ''}
-                    onChange={(e) => handleFilterChange('date', e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div 
+                   initial={{ height: 0, opacity: 0 }}
+                   animate={{ height: 'auto', opacity: 1 }}
+                   exit={{ height: 0, opacity: 0 }}
+                   className="overflow-hidden"
+                >
+                  <div className="pt-6 border-t border-gray-50 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Select
+                      label="Status Filter"
+                      value={filters.status || ''}
+                      onChange={(e) => handleFilterChange('status', e.target.value as ClaimStatus | '')}
+                      options={[
+                        { value: '', label: 'All Statuses' },
+                        ...Object.entries(CLAIM_STATUS_LABELS).map(([key, label]) => ({
+                          value: key,
+                          label,
+                        })),
+                      ]}
+                      fullWidth
+                    />
+                    <div className="w-full">
+                      <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 ml-1">Filed Date</label>
+                      <input
+                        type="date"
+                        className="w-full h-11 rounded-xl border border-gray-100 bg-gray-50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                        value={filters.date || ''}
+                        onChange={(e) => handleFilterChange('date', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </Card>
 
-        {/* Results Count & Error State */}
+        {/* Results Info & Error */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-bold"
+          >
+            <AlertCircle className="h-5 w-5" />
             {error}
-          </div>
+          </motion.div>
         )}
-
-        <div className="flex items-center justify-between">
-          <p className="text-gray-600">
-            Showing <span className="font-semibold text-gray-900">{claims.length}</span> claims
-          </p>
-        </div>
 
         {/* Claims List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Spinner size="lg" />
+            <p className="text-gray-400 font-medium animate-pulse">Loading claims database...</p>
           </div>
+        ) : claims.length > 0 ? (
+          <>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {claims.map((claim) => (
+                <motion.div key={claim._id} variants={itemVariants}>
+                  <ClaimCard claim={claim} />
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                className="mt-12 flex justify-center"
+              >
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </motion.div>
+            )}
+          </>
         ) : (
-          <div className="space-y-4">
-            {claims.map((claim) => (
-              <Link key={claim._id} to={`/claims/${claim._id}`}>
-                <Card hover>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Badge variant={getStatusBadgeVariant(claim.status)}>
-                          {CLAIM_STATUS_LABELS[claim.status as keyof typeof CLAIM_STATUS_LABELS] || claim.status}
-                        </Badge>
-                        {claim.status === ClaimStatus.IDENTITY_PROOF_REQUESTED && (
-                          <span className="text-sm text-orange-600 font-medium">
-                            Action Required
-                          </span>
-                        )}
-                      </div>
-
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {claim.itemId.description}
-                      </h3>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <UserIcon className="h-4 w-4 flex-shrink-0" />
-                          {/* Conditional display: "Claimed by You" if currentUser == claimant, otherwise "Claimant: Name" */}
-                          {user?.id === (typeof claim.claimantId === 'object' ? claim.claimantId._id : claim.claimantId) ? (
-                            <Badge variant="info" size="sm">Claimed by You</Badge>
-                          ) : (
-                            <span>Claimant: {typeof claim.claimantId === 'object' ? claim.claimantId.name : 'Unknown'}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Calendar className="h-4 w-4 flex-shrink-0" />
-                          <span>Filed {formatRelativeTime(claim.filedAt || claim.createdAt)}</span>
-                        </div>
-                        {claim.verifiedAt && (
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                            <span>Verified {formatRelativeTime(claim.verifiedAt)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="ml-4">
-                      <FileText className="h-6 w-6 text-gray-400" />
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && claims.length === 0 && (
-          <Card className="text-center py-12">
-            <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No claims found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Try adjusting your search criteria or filters
+          /* Empty State */
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20 bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200"
+          >
+            <div className="bg-white h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <FileText className="h-10 w-10 text-gray-300" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No results found</h3>
+            <p className="text-gray-500 mb-8 max-w-xs mx-auto">
+              We couldn't find any claims matching your filters. Try widening your search.
             </p>
-            <Button variant="primary" onClick={() => updateFilters({ keyword: '', status: '' })}>
-              Clear Filters
+            <Button 
+               variant="outline" 
+               onClick={() => updateFilters({ keyword: '', status: '', page: 1 })}
+               className="rounded-xl px-8"
+            >
+              Reset All Filters
             </Button>
-          </Card>
+          </motion.div>
         )}
       </div>
     </ComponentErrorBoundary>

@@ -54,6 +54,19 @@ export const CLAIM_STATUS_COLORS: Record<ClaimStatus, string> = {
   [ClaimStatus.REJECTED]: 'bg-red-100 text-red-800',
 };
 
+// Payment Status
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  FAILED = 'FAILED',
+}
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  [PaymentStatus.PENDING]: 'Pending',
+  [PaymentStatus.PAID]: 'Paid',
+  [PaymentStatus.FAILED]: 'Failed',
+};
+
 // Disposition Type
 export enum DispositionType {
   DONATE = 'DONATE',

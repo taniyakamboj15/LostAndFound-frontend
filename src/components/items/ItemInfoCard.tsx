@@ -11,59 +11,53 @@ interface ItemInfoCardProps {
 }
 
 const ItemInfoCard = ({ item, currentUser, isStaffOrAdmin }: ItemInfoCardProps) => {
-  const getStatusBadgeVariant = (status: ItemStatus) => {
-    return ITEM_STATUS[status].variant;
-  };
-
   const isClaimedByCurrentUser = 
     item.claimedBy && 
     (typeof item.claimedBy === 'object' ? item.claimedBy._id : item.claimedBy) === (isStaffOrAdmin ? null : currentUser?._id); 
 
- 
   return (
-    <>
-      <Card>
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Badge variant="info">
-              {ITEM_CATEGORIES[item.category as ItemCategory].label}
+    <div className="space-y-6">
+      <Card className="p-6 border-none shadow-md overflow-hidden bg-white/50 backdrop-blur-sm">
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <Badge variant="info" className="px-3 py-1 rounded-lg font-bold text-[11px] uppercase tracking-wider">
+            {ITEM_CATEGORIES[item.category as ItemCategory].label}
+          </Badge>
+          <Badge variant={ITEM_STATUS[item.status as ItemStatus].variant} className="px-3 py-1 rounded-lg font-bold text-[11px] uppercase tracking-wider">
+            {ITEM_STATUS[item.status as ItemStatus].label}
+          </Badge>
+          {item.isHighValue && (
+            <Badge variant="warning" className="px-3 py-1 rounded-lg font-bold text-[11px] uppercase tracking-wider">
+              High Value Item
             </Badge>
-            <Badge variant={getStatusBadgeVariant(item.status as ItemStatus)}>
-              {ITEM_STATUS[item.status as ItemStatus].label}
+          )}
+          {isClaimedByCurrentUser && (
+            <Badge variant="info" className="px-3 py-1 rounded-lg font-bold text-[11px] uppercase tracking-wider border-blue-200 bg-blue-50 text-blue-700">
+              Claimed by You
             </Badge>
-            {item.isHighValue && (
-              <Badge variant="warning">High Value</Badge>
-            )}
-            {/* Logic for 'Claimed by You' might need specific user ID comparison. 
-                Using simplistic check here based on passed boolean or logic in parent if needed, 
-                but let's try to replicate logic. 
-            */}
-             {isClaimedByCurrentUser && (
-                 <Badge variant="info">Claimed by You</Badge>
-             )}
-          </div>
+          )}
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          {ITEM_CATEGORIES[item.category as ItemCategory].label} - {item.description.substring(0, 50)}...
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-6 leading-tight">
+          {item.description}
         </h1>
 
         <div className="prose max-w-none">
-          <p className="text-gray-700">{item.description}</p>
+          <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-3">Description</h3>
+          <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">{item.description}</p>
         </div>
       </Card>
 
       {/* Identifying Features */}
       {item.identifyingFeatures && item.identifyingFeatures.length > 0 && (
-        <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+        <Card className="p-6 border-none shadow-md bg-white">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">
             Identifying Features
           </h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {item.identifyingFeatures.map((feature: string, index: number) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold border border-blue-100 shadow-sm"
               >
                 {feature}
               </span>
@@ -74,23 +68,23 @@ const ItemInfoCard = ({ item, currentUser, isStaffOrAdmin }: ItemInfoCardProps) 
 
       {/* Keywords */}
       {item.keywords && item.keywords.length > 0 && (
-        <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
-            Keywords
+        <Card className="p-6 border-none shadow-md bg-white">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">
+            Related Keywords
           </h2>
           <div className="flex flex-wrap gap-2">
             {item.keywords.map((keyword: string, index: number) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                className="px-3 py-1 bg-gray-50 text-gray-500 rounded-full text-xs font-semibold border border-gray-100"
               >
-                {keyword}
+                #{keyword.toLowerCase()}
               </span>
             ))}
           </div>
         </Card>
       )}
-    </>
+    </div>
   );
 };
 

@@ -57,6 +57,7 @@ export const useClaimActions = (claimId: string | null) => {
     handleVerify,
     handleReject,
     openRejectModal,
-    closeRejectModal
+    closeRejectModal,
+    refresh
   };
 };

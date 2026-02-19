@@ -1,295 +1,177 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import BackButton from '@components/ui/BackButton';
-import { 
-  Calendar,
-  Clock,
-  MapPin,
-  User,
-  Package,
-  CheckCircle,
-  Mail,
-  Phone,
-  AlertCircle,
-  QrCode
-} from 'lucide-react';
+import { Calendar, Clock, MapPin, Package, ShieldCheck, CheckCircle, AlertCircle } from 'lucide-react';
 import { Card, Badge, Button, Spinner } from '@components/ui';
+import { usePickupDetail } from '@hooks/usePickups';
 import { formatDate } from '@utils/formatters';
-import { useAuth } from '@hooks/useAuth';
-import { usePickupActions } from '@hooks/usePickupActions';
-import { usePickupVerification } from '@hooks/usePickupVerification';
-import ScanPickupModal from '@components/claims/ScanPickupModal';
 import { ComponentErrorBoundary } from '@components/feedback';
+import { useAuth } from '@hooks/useAuth';
+
+import PickupQRCode from '@components/pickups/PickupQRCode';
+import PickupLogistics from '@components/pickups/PickupLogistics';
+import PickupItemInfo from '@components/pickups/PickupItemInfo';
+import PickupClaimantInfo from '@components/pickups/PickupClaimantInfo';
 
 const PickupDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { canAccessStaffRoutes } = useAuth();
+  const { pickup, isLoading, isCompleting, completePickup } = usePickupDetail(id);
+  const { isStaff, isAdmin } = useAuth();
 
-  const { pickup, isLoading, isCompleting, error, handleCompletePickup } = usePickupActions(id);
-  const { 
-    isScanModalOpen, 
-    openScanModal, 
-    closeScanModal, 
-    handleVerifySuccess 
-  } = usePickupVerification(() => window.location.reload());
-
-  const STATUS_BADGE_MAP = {
-    true: { variant: 'success' as const, label: 'Completed' },
-    false: { variant: 'info' as const, label: 'Scheduled' }
-  };
-
-  const statusBadge = pickup ? STATUS_BADGE_MAP[String(pickup.isCompleted) as keyof typeof STATUS_BADGE_MAP] : null;
-
-  if (isLoading) {
+  if (isLoading || !pickup) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <Spinner size="lg" />
+        <p className="text-gray-400 font-medium animate-pulse">Loading pickup logistics...</p>
       </div>
     );
   }
 
-  if (error || !pickup || !statusBadge) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6">
-        <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          {error || 'Pickup not found'}
-        </h2>
-        <p className="text-gray-600 mb-6 max-w-md">
-          We couldn't retrieve the details for this pickup. It might have been deleted or you may not have permission to view it.
-        </p>
-        <Link to="/pickups">
-          <Button variant="outline">Back to Pickups</Button>
-        </Link>
-      </div>
-    );
-  }
+  const canComplete = (isStaff() || isAdmin()) && !pickup.isCompleted;
 
   return (
     <ComponentErrorBoundary title="Pickup Detail Error">
-      <div className="space-y-6">
-        {/* Back Button */}
-        {/* Back Button */}
-        <BackButton label="Back to Pickups" />
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Badge variant={statusBadge.variant}>
-                {statusBadge.label}
-              </Badge>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Pickup #{pickup.referenceCode || pickup._id.slice(-6).toUpperCase()}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Scheduled for {formatDate(pickup.pickupDate)} at {pickup.startTime} - {pickup.endTime}
-            </p>
-          </div>
-
-          {/* Actions (Staff/Admin only) */}
-          {canAccessStaffRoutes() && !pickup.isCompleted && (
-            <div className="flex gap-3 items-start">
-               {!pickup.isVerified && (
-                <Button
-                  variant="outline"
-                  onClick={openScanModal}
-                >
-                  <QrCode className="h-5 w-5 mr-2" />
-                  Verify Pickup
-                </Button>
-              )}
-              <div>
-                <Button
-                  variant="primary"
-                  onClick={handleCompletePickup}
-                  isLoading={isCompleting}
-                  disabled={!pickup.isVerified}
-                >
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Complete Pickup
-                </Button>
-                {!pickup.isVerified && (
-                  <p className="text-xs text-red-500 mt-1 text-right">
-                    * Verification required
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="space-y-8 max-w-5xl mx-auto py-6 px-4"
+      >
+        <div className="flex items-center justify-between">
+           <BackButton label="Back to Pickups" />
+           {pickup.isCompleted && (
+             <Badge variant="success" className="px-4 py-1.5 rounded-full shadow-sm flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Pickup Completed
+             </Badge>
+           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Item Information */}
-            <Card>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Item Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Description</p>
-                  <p className="text-lg text-gray-900">{pickup.itemId?.description || pickup.claimId?.itemId?.description || 'N/A'}</p>
-                </div>
-                <Link to={`/items/${pickup.itemId?._id || pickup.claimId?.itemId?._id}`}>
-                  <Button variant="outline" size="sm">
-                    View Full Item Details
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+        {/* Hero Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Card className="p-0 border-none bg-white shadow-xl shadow-gray-100/50 overflow-hidden rounded-3xl">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white relative">
+               <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <Package className="h-32 w-32" />
+               </div>
+               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-4">
+                     <div className="flex items-center gap-3">
+                        <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/30">
+                          {pickup.isCompleted ? 'Historical Record' : 'Active Schedule'}
+                        </span>
+                        <span className="text-blue-200 text-sm font-medium">Ref: #{pickup.referenceCode}</span>
+                     </div>
+                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                       {pickup.itemId?.description || 'Item Handoff'}
+                     </h1>
+                     <div className="flex flex-wrap items-center gap-6 pt-2">
+                        <div className="flex items-center gap-2">
+                           <Calendar className="h-5 w-5 text-blue-200" />
+                           <span className="font-bold">{formatDate(pickup.pickupDate)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Clock className="h-5 w-5 text-blue-200" />
+                           <span className="font-bold">{pickup.startTime} - {pickup.endTime}</span>
+                        </div>
+                     </div>
+                  </div>
 
-            {/* Pickup Details */}
-            <Card>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Pickup Details
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-start gap-3">
-                  <Calendar className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Scheduled Date</p>
-                    <p className="text-gray-900 font-medium">{formatDate(pickup.pickupDate)}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Scheduled Time</p>
-                    <p className="text-gray-900 font-medium">{pickup.startTime} - {pickup.endTime}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Location</p>
-                    <p className="text-gray-900 font-medium">Main Office, Lost & Found Dept.</p>
-                  </div>
-                </div>
-
-                {pickup.referenceCode && (
-                  <div className="flex items-start gap-3">
-                    <Package className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Reference Code</p>
-                      <p className="text-gray-900 font-medium font-mono">{pickup.referenceCode}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {pickup.notes && (
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <p className="text-sm font-medium text-gray-500 mb-2">Additional Notes</p>
-                  <p className="text-gray-700 bg-gray-50 p-4 rounded-lg italic">"{pickup.notes}"</p>
-                </div>
-              )}
-            </Card>
-
-            {/* QR Code - Hide for Staff/Admin (or rather, hide if backend didn't send it) */}
-            {pickup.qrCode && !pickup.isCompleted && (
-              <Card>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Pickup QR Code
-                </h2>
-                <div className="text-center py-8">
-                  <div className="inline-block p-6 bg-white border-2 border-gray-100 rounded-xl shadow-sm">
-                    <img 
-                      src={pickup.qrCode} 
-                      alt="Pickup QR Code" 
-                      className="h-40 w-40 mx-auto"
-                    />
-                  </div>
-                  <p className="text-sm text-gray-600 mt-4">
-                    Code: <span className="font-mono font-bold text-gray-900">{pickup.referenceCode}</span>
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2 max-w-xs mx-auto">
-                    Please show this QR code to the staff during your appointment for quick verification.
-                  </p>
-                </div>
-              </Card>
-            )}
-
-            {pickup.isCompleted && pickup.completedAt && (
-               <Card className="bg-green-50 border-green-100">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-100 p-2 rounded-full">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-green-900">Pickup Completed</h3>
-                      <p className="text-sm text-green-700">
-                        This item was handed over on {formatDate(pickup.completedAt)}
-                      </p>
-                    </div>
-                  </div>
-               </Card>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Claimant Information */}
-            <Card>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Claimant Details
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-gray-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{pickup.claimantId?.name}</p>
-                    <p className="text-xs text-gray-500">Claimant</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Mail className="h-4 w-4" />
-                    <span>{pickup.claimantId?.email}</span>
-                  </div>
-                  {pickup.claimantId?.phone && (
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                      <Phone className="h-4 w-4" />
-                      <span>{pickup.claimantId.phone}</span>
-                    </div>
+                  {/* QR Code Segment for Claimant */}
+                  {!pickup.isCompleted && (
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }}
+                      className="bg-white p-4 rounded-2xl shadow-2xl"
+                    >
+                      <PickupQRCode pickup={pickup} />
+                      <p className="text-center text-gray-900 text-[10px] font-bold mt-2 uppercase tracking-tighter">Verification Code</p>
+                    </motion.div>
                   )}
-                </div>
-              </div>
-            </Card>
+               </div>
+            </div>
 
-            {/* Important Info */}
-            {!pickup.isCompleted && (
-              <Card className="bg-amber-50 border-amber-200">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-amber-900">
-                      Pickup Checklist
-                    </p>
-                    <ul className="text-sm text-amber-800 mt-2 space-y-2 list-disc list-inside">
-                      <li>Bring a valid government photo ID</li>
-                      <li>Have your QR code or reference ready</li>
-                      <li>Arrive within your scheduled time window</li>
-                      <li>Inspection of the item is required before sign-off</li>
-                    </ul>
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-50">
+               <div className="p-8 space-y-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Handoff Point</span>
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-blue-50 rounded-lg">
+                        <MapPin className="h-5 w-5 text-blue-600" />
+                     </div>
+                     <span className="font-bold text-gray-900">Main Security Office</span>
                   </div>
-                </div>
-              </Card>
-            )}
-          </div>
+               </div>
+               <div className="p-8 space-y-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ownership Verified</span>
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-green-50 rounded-lg">
+                        <ShieldCheck className="h-5 w-5 text-green-600" />
+                     </div>
+                     <span className="font-bold text-gray-900">Yes (System Checked)</span>
+                  </div>
+               </div>
+               <div className="p-8 flex items-center justify-center">
+                  {canComplete ? (
+                     <Button 
+                       variant="primary" 
+                       onClick={() => completePickup(pickup.referenceCode)} 
+                       isLoading={isCompleting}
+                       className="w-full h-12 rounded-xl shadow-lg shadow-blue-200"
+                     >
+                       Mark as Handed Over
+                     </Button>
+                  ) : pickup.isCompleted ? (
+                     <div className="text-center">
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-tighter mb-1">Handed Over On</p>
+                        <p className="font-bold text-gray-900">{formatDate(pickup.completedAt || '')}</p>
+                     </div>
+                  ) : (
+                     <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100">
+                        <AlertCircle className="h-4 w-4" />
+                        <span className="text-xs font-bold">Scanning mode only</span>
+                     </div>
+                  )}
+               </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+           <motion.div 
+             initial={{ opacity: 0, x: -20 }}
+             whileInView={{ opacity: 1, x: 0 }}
+             viewport={{ once: true }}
+           >
+              <PickupItemInfo pickup={pickup} />
+           </motion.div>
+           <motion.div 
+             initial={{ opacity: 0, x: 20 }}
+             whileInView={{ opacity: 1, x: 0 }}
+             viewport={{ once: true }}
+           >
+              <PickupClaimantInfo pickup={pickup} />
+           </motion.div>
         </div>
-      </div>
-      
-      <ScanPickupModal
-        isOpen={isScanModalOpen}
-        onClose={closeScanModal}
-        onVerifySuccess={handleVerifySuccess}
-      />
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <PickupLogistics pickup={pickup} />
+        </motion.div>
+
+        {pickup.isCompleted && pickup.notes && (
+          <Card className="p-8 bg-gray-50 border-none rounded-3xl">
+             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-gray-400" />
+                Handover Notes
+             </h3>
+             <p className="text-gray-600 italic leading-relaxed">"{pickup.notes}"</p>
+          </Card>
+        )}
+      </motion.div>
     </ComponentErrorBoundary>
   );
 };

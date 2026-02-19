@@ -114,3 +114,16 @@ export interface PublicItem {
   keywords: string[];
   createdAt: string;
 }
+
+export interface EditItemFormData {
+  category: ItemCategory;
+  description: string;
+  locationFound: string;
+  dateFound: string;
+  finderName?: string;
+  finderContact?: string;
+  isHighValue: boolean;
+  storageLocation?: string | null;
+  status: ItemStatus;
+  identifyingFeatures?: string;
+}

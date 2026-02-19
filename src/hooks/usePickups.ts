@@ -17,13 +17,24 @@ export const usePickups = () => {
   const initialFilters: PickupFilters = useMemo(() => ({
     isCompleted: searchParams.get('isCompleted') || undefined,
     pickupDate: searchParams.get('pickupDate') || undefined,
-  }), []); // Run once on mount
+    keyword: searchParams.get('keyword') || undefined,
+    month: searchParams.get('month') || undefined,
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: 10
+  }), [searchParams]);
 
   const { filters, setFilters, debouncedFilters } = useQueryFilters<PickupFilters>(initialFilters);
 
   const [pickups, setPickups] = useState<Pickup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1
+  });
+  
   const toast = useToast();
 
   const fetchPickups = useCallback(async (currentFilters: PickupFilters = debouncedFilters) => {
@@ -42,7 +53,11 @@ export const usePickups = () => {
       } else {
         return;
       }
+      
       setPickups(response.data);
+      if (response.pagination) {
+        setPagination(response.pagination);
+      }
     } catch (err: unknown) {
       const message = getErrorMessage(err);
       setError(message);
@@ -64,14 +79,20 @@ export const usePickups = () => {
     setFilters(newFilters);
   }, [setFilters]);
 
+  const handlePageChange = useCallback((page: number) => {
+    setFilters({ ...filters, page });
+  }, [filters, setFilters]);
+
   return useMemo(() => ({
     pickups,
     isLoading,
     error,
     filters,
     updateFilters,
+    pagination,
+    handlePageChange,
     refresh: () => fetchPickups(filters),
-  }), [pickups, isLoading, error, filters, updateFilters, fetchPickups]);
+  }), [pickups, isLoading, error, filters, updateFilters, pagination, handlePageChange, fetchPickups]);
 };
 
 export const usePickupDetail = (id: string | undefined) => {

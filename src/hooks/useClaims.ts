@@ -6,6 +6,7 @@ import { useToast } from './useToast';
 import { useQueryFilters } from './useQueryFilters';
 import { ClaimStatus } from '@constants/status';
 import { ApiError } from '../types/api.types';
+import { Claim, ClaimFilterState, ClaimFilters } from '../types/claim.types';
 
 export const useFileClaim = (itemId: string | null) => {
   const navigate = useNavigate();
@@ -93,8 +94,6 @@ export const useFileClaim = (itemId: string | null) => {
   }), [proofFiles, isSubmitting, handleFileChange, removeFile, submitClaim]);
 };
 
-import { Claim, ClaimFilterState } from '../types/claim.types';
-
 export const useClaimsList = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -104,6 +103,8 @@ export const useClaimsList = () => {
     keyword: searchParams.get('keyword') || undefined,
     status: (searchParams.get('status') as ClaimStatus) || undefined,
     date: searchParams.get('date') || undefined,
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: parseInt(searchParams.get('limit') || '10'),
   }), []);
 
   const { filters, setFilters, debouncedFilters } = useQueryFilters<ClaimFilterState>(initialFilters);
@@ -111,15 +112,18 @@ export const useClaimsList = () => {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
   const fetchClaims = useCallback(async (currentFilters: ClaimFilterState = debouncedFilters) => {
     setIsLoading(true);
     setError(null);
     try {
-      const cleanFilters = {
-        ...currentFilters,
-        status: currentFilters.status || undefined,
-        date: currentFilters.date || undefined,
+      const cleanFilters: ClaimFilters = {
+        keyword: currentFilters.keyword as string,
+        status: currentFilters.status as ClaimStatus,
+        date: currentFilters.date as string,
+        page: (currentFilters.page as number) || 1,
+        limit: (currentFilters.limit as number) || 10
       };
 
       if (!user) return;
@@ -132,7 +136,11 @@ export const useClaimsList = () => {
       } else {
         return;
       }
+      
       setClaims(response.data);
+      if (response.pagination) {
+          setPagination(response.pagination);
+      }
     } catch (err: unknown) {
       const error = err as ApiError;
       const message = error.message || 'Failed to fetch claims';
@@ -154,6 +162,10 @@ export const useClaimsList = () => {
     }
   }, [debouncedFilters, user?.role, fetchClaims]); 
 
+  const handlePageChange = useCallback((page: number) => {
+    updateFilters({ ...filters, page });
+  }, [filters, updateFilters]);
+
   return useMemo(() => ({
     claims,
     isLoading,
@@ -161,5 +173,7 @@ export const useClaimsList = () => {
     filters,
     updateFilters,
     refresh: () => fetchClaims(filters),
-  }), [claims, isLoading, error, filters, updateFilters, fetchClaims]);
+    pagination,
+    handlePageChange
+  }), [claims, isLoading, error, filters, updateFilters, fetchClaims, pagination, handlePageChange]);
 };

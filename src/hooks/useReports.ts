@@ -6,17 +6,20 @@ import { useToast } from './useToast';
 import { useQueryFilters } from './useQueryFilters';
 import { getErrorMessage } from '@utils/errors';
 import { ItemCategory } from '@constants/categories';
-import type { LostReport, CreateLostReportData, ReportFilterState } from '../types/report.types';
+import type { LostReport, CreateLostReportData, ReportFilterState, LostReportFilters } from '../types/report.types';
 
 export const useReportsList = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  const toast = useToast();
 
   const initialFilters: ReportFilterState = useMemo(() => ({
     keyword: searchParams.get('keyword') || undefined,
     category: (searchParams.get('category') as ItemCategory) || undefined,
     dateLostFrom: searchParams.get('dateLostFrom') || undefined,
     dateLostTo: searchParams.get('dateLostTo') || undefined,
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: parseInt(searchParams.get('limit') || '10'),
   }), []);
 
   const { filters, setFilters, debouncedFilters } = useQueryFilters<ReportFilterState>(initialFilters);
@@ -24,17 +27,19 @@ export const useReportsList = () => {
   const [reports, setReports] = useState<LostReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const toast = useToast();
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
   const fetchReports = useCallback(async (currentFilters: ReportFilterState = debouncedFilters) => {
     setIsLoading(true);
     setError(null);
     try {
-      const filterParams = {
-        keyword: currentFilters.keyword,
-        category: currentFilters.category || undefined,
-        dateLostFrom: currentFilters.dateLostFrom || undefined,
-        dateLostTo: currentFilters.dateLostTo || undefined,
+      const filterParams: LostReportFilters = {
+        keyword: currentFilters.keyword as string,
+        category: (currentFilters.category || undefined) as ItemCategory,
+        dateLostFrom: currentFilters.dateLostFrom as string,
+        dateLostTo: currentFilters.dateLostTo as string,
+        page: (currentFilters.page as number) || 1,
+        limit: (currentFilters.limit as number) || 10,
       };
 
       if (!user) return;
@@ -48,6 +53,9 @@ export const useReportsList = () => {
         return;
       }
       setReports(response.data);
+      if (response.pagination) {
+          setPagination(response.pagination);
+      }
     } catch (err: unknown) {
       const message = getErrorMessage(err);
       setError(message);
@@ -68,6 +76,10 @@ export const useReportsList = () => {
     }
   }, [debouncedFilters, user?.role, fetchReports]); 
 
+  const handlePageChange = useCallback((page: number) => {
+    updateFilters({ ...filters, page });
+  }, [filters, updateFilters]);
+
   return useMemo(() => ({
     reports,
     isLoading,
@@ -75,7 +87,9 @@ export const useReportsList = () => {
     filters,
     updateFilters,
     refresh: () => fetchReports(filters),
-  }), [reports, isLoading, error, filters, updateFilters, fetchReports]);
+    pagination,
+    handlePageChange
+  }), [reports, isLoading, error, filters, updateFilters, fetchReports, pagination, handlePageChange]);
 };
 
 export const useReportDetail = (id: string | null) => {

@@ -47,9 +47,17 @@ const ScanPickupModal = ({ isOpen, onClose, onVerifySuccess }: ScanPickupModalPr
 
       <div className="space-y-4">
         {error && (
-          <div className="p-3 bg-red-50 text-red-700 rounded-md flex items-center gap-2 text-sm">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            {error}
+          <div className={cn(
+            "p-3 rounded-lg flex items-center gap-2 text-sm border animate-in fade-in slide-in-from-top-1 duration-200",
+            error.toLowerCase().includes('payment') || error.toLowerCase().includes('fee')
+              ? "bg-amber-50 text-amber-800 border-amber-200" 
+              : "bg-red-50 text-red-700 border-red-200"
+          )}>
+            <AlertCircle className={cn(
+              "h-4 w-4 flex-shrink-0",
+              error.toLowerCase().includes('payment') || error.toLowerCase().includes('fee') ? "text-amber-500" : "text-red-500"
+            )} />
+            <span className="font-semibold">{error}</span>
           </div>
         )}
 

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, User, Package } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Calendar, Clock, MapPin, User, Package, ArrowRight } from 'lucide-react';
 import { Card, Badge } from '@components/ui';
 import { formatDate } from '@utils/formatters';
 import { Pickup } from '@app-types/pickup.types';
@@ -19,10 +20,7 @@ const PickupCard = ({ pickup }: PickupCardProps) => {
 
   const getClaimantName = (pickup: Pickup) => {
     const claimantId = typeof pickup.claimantId === 'object' ? pickup.claimantId._id : pickup.claimantId;
-    // Handle both _id and id properties for user
     const userId = user?.id || user?._id;
-    
-    // Check if the current user is the claimant
     const isMe = user && (claimantId === userId);
     
     if (isMe) return 'You';
@@ -32,48 +30,68 @@ const PickupCard = ({ pickup }: PickupCardProps) => {
   const statusBadge = getStatusBadge(pickup.isCompleted);
 
   return (
-    <Link to={`/pickups/${pickup._id}`}>
-      <Card hover padding="sm">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <Badge variant={statusBadge.variant}>
-                {statusBadge.label}
-              </Badge>
-            </div>
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
+      <Link to={`/pickups/${pickup._id}`}>
+        <Card className="group border-none shadow-md hover:shadow-xl bg-white overflow-hidden transition-all duration-300">
+          <div className="flex flex-col h-full">
+             {/* Status Header */}
+             <div className="flex items-center justify-between p-4 bg-gray-50/50">
+                <Badge variant={statusBadge.variant} className="shadow-sm">
+                  {statusBadge.label}
+                </Badge>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                   <Calendar className="h-3 w-3" />
+                   {formatDate(pickup.pickupDate)}
+                </div>
+             </div>
 
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {pickup.itemId?.description || pickup.claimId?.itemId?.description || 'Item Handoff'}
-            </h3>
+             {/* Content */}
+             <div className="p-5 flex-1 space-y-5">
+                <div className="flex items-start gap-4">
+                   <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Package className="h-6 w-6 text-blue-600" />
+                   </div>
+                   <div className="min-w-0 flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                        {pickup.itemId?.description || pickup.claimId?.itemId?.description || 'Item Handoff'}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-1 text-gray-500 text-sm font-medium">
+                         <User className="h-3.5 w-3.5" />
+                         <span>{getClaimantName(pickup)}</span>
+                      </div>
+                   </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-              <div className="flex items-center gap-2 text-gray-600">
-                <User className="h-4 w-4 flex-shrink-0" />
-                <span>
-                  {getClaimantName(pickup)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Calendar className="h-4 w-4 flex-shrink-0" />
-                <span>{formatDate(pickup.pickupDate)}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="h-4 w-4 flex-shrink-0" />
-                <span>{pickup.startTime} - {pickup.endTime}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>Main Office</span>
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Time Slot</span>
+                      <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                         <Clock className="h-4 w-4 text-blue-500" />
+                         <span>{pickup.startTime} - {pickup.endTime}</span>
+                      </div>
+                   </div>
+                   <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Location</span>
+                      <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                         <MapPin className="h-4 w-4 text-red-500" />
+                         <span className="truncate">Main Office</span>
+                      </div>
+                   </div>
+                </div>
+             </div>
+
+             {/* Footer Action */}
+             <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between group-hover:bg-blue-50/30 transition-colors">
+                <span className="text-xs font-bold text-gray-400 group-hover:text-blue-500 transition-colors uppercase tracking-widest">Pickup Logistics</span>
+                <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+             </div>
           </div>
-
-          <div className="ml-4">
-            <Package className="h-6 w-6 text-gray-400" />
-          </div>
-        </div>
-      </Card>
-    </Link>
+        </Card>
+      </Link>
+    </motion.div>
   );
 };
 

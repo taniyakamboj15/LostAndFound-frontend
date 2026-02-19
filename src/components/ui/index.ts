@@ -8,6 +8,7 @@ export { default as Badge } from './Badge';
 export { default as Spinner } from './Spinner';
 export { PageLoader, ShimmerCard, ShimmerList, ShimmerTable, ShimmerDetail } from './Shimmer';
 export { default as Modal } from './Modal';
+export * from './Pagination';
 
 export type { 
   ButtonProps, 

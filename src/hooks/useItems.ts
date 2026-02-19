@@ -53,12 +53,16 @@ export const useItemsList = () => {
     keyword: searchParams.get('keyword') || '',
     category: (searchParams.get('category') as ItemCategory) || '',
     status: (searchParams.get('status') as ItemStatus) || '',
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: parseInt(searchParams.get('limit') || '10'),
   }), []); // Only on mount
 
   const [items, setItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Initial load true
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminItemFilters>(initialFilters);
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 1 });
+  
   const debouncedFilters = useDebounce(filters, 500);
   
   // Track active requests to avoid race conditions
@@ -70,17 +74,26 @@ export const useItemsList = () => {
     setError(null);
 
     try {
-      // Clean up filters: remove empty strings
-      const cleanFilters: ServiceItemFilters = {};
+      const cleanFilters: ServiceItemFilters = {
+        page: currentFilters.page,
+        limit: currentFilters.limit
+      };
       if (currentFilters.keyword) cleanFilters.keyword = currentFilters.keyword;
       if (currentFilters.category) cleanFilters.category = currentFilters.category as ItemCategory;
       if (currentFilters.status) cleanFilters.status = currentFilters.status as ItemStatus;
 
       const response = await itemService.getItems(cleanFilters);
       
-      // Only update if this is still the latest request
       if (requestId === requestCount.current) {
         setItems(response.data);
+        if (response.pagination) {
+          setPagination({
+            page: response.pagination.page,
+            limit: response.pagination.limit,
+            total: response.pagination.total,
+            pages: response.pagination.totalPages
+          });
+        }
       }
     } catch (err: unknown) {
       if (requestId === requestCount.current) {
@@ -98,12 +111,14 @@ export const useItemsList = () => {
   // Sync URL search params when filters change
   const updateFilters = useCallback((newFilters: AdminItemFilters) => {
     setFilters(newFilters);
-    setIsLoading(true); // Immediate visual feedback that we're working
+    setIsLoading(true);
 
     const newParams = new URLSearchParams();
     if (newFilters.keyword) newParams.set('keyword', newFilters.keyword);
     if (newFilters.category) newParams.set('category', newFilters.category);
     if (newFilters.status) newParams.set('status', newFilters.status);
+    if (newFilters.page && newFilters.page > 1) newParams.set('page', newFilters.page.toString());
+    if (newFilters.limit && newFilters.limit !== 10) newParams.set('limit', newFilters.limit.toString());
     
     setSearchParams(newParams, { replace: true });
   }, [setSearchParams]);
@@ -120,8 +135,10 @@ export const useItemsList = () => {
     filters,
     updateFilters,
     refresh: () => fetchItems(filters),
-  }), [items, isLoading, error, filters, updateFilters, fetchItems]);
+    pagination,
+  }), [items, isLoading, error, filters, updateFilters, fetchItems, pagination]);
 };
+
 export const useCreateItem = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();
@@ -142,6 +159,7 @@ export const useCreateItem = () => {
 
   return useMemo(() => ({ createItem, isSubmitting }), [createItem, isSubmitting]);
 };
+
 export const useUpdateItem = (id: string | null) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();

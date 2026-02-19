@@ -157,6 +157,15 @@ export interface PublicSearchFilters extends BaseSearchFilters {
 
 export interface AdminItemFilters extends BaseSearchFilters {
   status: ItemStatus | '';
+  page?: number;
+  limit?: number;
+}
+
+export interface FeeBreakdown {
+  handlingFee: number;
+  storageFee: number;
+  daysStored: number;
+  totalAmount: number;
 }
 
 

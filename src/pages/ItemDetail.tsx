@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { MapPin, Calendar, ShieldCheck, Clock } from 'lucide-react';
 import { Modal, Spinner, Button } from '@components/ui';
 import BackButton from '@components/ui/BackButton';
 import MatchListModal from '@components/matches/MatchListModal';
@@ -16,6 +18,7 @@ import ItemDetailsSidebar from '@components/items/ItemDetailsSidebar';
 import RetentionAlert from '@components/items/RetentionAlert';
 import { Match } from '../types/match.types';
 import { Claim } from '../types/claim.types';
+import { formatDate } from '@utils/formatters';
 
 const ItemDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,12 +64,9 @@ const ItemDetail = () => {
     }
   }, [id, isAdmin, isStaff, item]);
 
-
-
-
   if (loading || !item) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <Spinner size="lg" />
       </div>
     );
@@ -76,22 +76,62 @@ const ItemDetail = () => {
 
   return (
     <ComponentErrorBoundary title="Item Detail Error">
-      <div className="space-y-6">
-        {/* Back Button */}
-        <BackButton label="Back to Items" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Photos */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      >
+        {/* Navigation & Breadcrumbs */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <BackButton label="Back to Items Gallery" />
+          
+          <div className="flex items-center gap-6 text-sm font-medium text-gray-500">
+             <div className="flex items-center gap-1.5">
+               <Calendar className="h-4 w-4" />
+               <span>Reported {formatDate(item.createdAt)}</span>
+             </div>
+             <div className="flex items-center gap-1.5">
+               <ShieldCheck className="h-4 w-4 text-green-500" />
+               <span className="text-gray-900">Verified Listing</span>
+             </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Visuals & Description Section */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Photos Section */}
             <ItemPhotos photos={item.photos} itemTitle={item.description} />
 
-            {/* Description & Info */}
+            {/* Details & Information */}
             <ItemInfoCard item={item} currentUser={user} isStaffOrAdmin={isStaffOrAdmin} />
+            
+            {/* Quick Metadata Grid (Optional but modern) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 rounded-2xl flex items-center gap-4">
+                <div className="p-3 bg-white rounded-xl shadow-sm text-blue-600">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Location Found</p>
+                  <p className="text-gray-900 font-semibold">{item.locationFound}</p>
+                </div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-2xl flex items-center gap-4">
+                <div className="p-3 bg-white rounded-xl shadow-sm text-purple-600">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Date Reported</p>
+                  <p className="text-gray-900 font-semibold">{formatDate(item.dateFound)}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Actions */}
+          {/* Sidebar / Interaction Section */}
+          <div className="lg:col-span-4 space-y-8">
             <ItemActionCard
                 item={item}
                 user={user}
@@ -110,10 +150,8 @@ const ItemDetail = () => {
                 onViewMatchesClick={() => setIsMatchModalOpen(true)}
             />
 
-            {/* Details */}
             <ItemDetailsSidebar item={item} />
 
-            {/* Alert */}
             <RetentionAlert 
                 item={item} 
                 isAdminOrStaff={isStaffOrAdmin}
@@ -129,17 +167,24 @@ const ItemDetail = () => {
           title="File a Claim"
           size="md"
         >
-          <div className="space-y-4">
-            <p className="text-gray-600">
-              To claim this item, you'll need to provide proof of ownership. Click continue to proceed with the claim process.
-            </p>
-            <div className="flex gap-3">
+          <div className="p-2 space-y-6">
+            <div className="bg-blue-50 p-4 rounded-xl flex items-start gap-4">
+               <ShieldCheck className="h-6 w-6 text-blue-600 mt-1" />
+               <div>
+                  <h4 className="font-bold text-blue-900">Identity Verification Required</h4>
+                  <p className="text-sm text-blue-700 leading-relaxed mt-1">
+                    To maintain security, we require proof of ownership such as unique features descriptions or purchase receipts.
+                  </p>
+               </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button
                 variant="outline"
                 onClick={() => setIsClaimModalOpen(false)}
-                fullWidth
+                className="flex-1"
               >
-                Cancel
+                Maybe Later
               </Button>
               <Button
                 variant="primary"
@@ -147,9 +192,9 @@ const ItemDetail = () => {
                   setIsClaimModalOpen(false);
                   navigate(`/claims/create?itemId=${item._id}`);
                 }}
-                fullWidth
+                className="flex-1 shadow-md shadow-blue-200"
               >
-                Continue
+                Proceed to Claim
               </Button>
             </div>
           </div>
@@ -161,7 +206,7 @@ const ItemDetail = () => {
             onClose={() => setIsMatchModalOpen(false)}
             matches={matches}
         />
-      </div>
+      </motion.div>
     </ComponentErrorBoundary>
   );
 };
