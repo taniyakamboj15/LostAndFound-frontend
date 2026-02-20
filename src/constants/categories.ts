@@ -9,6 +9,7 @@ export enum ItemCategory {
   JEWELRY = 'JEWELRY',
   BOOKS = 'BOOKS',
   SPORTS_EQUIPMENT = 'SPORTS_EQUIPMENT',
+  PERISHABLES = 'PERISHABLES',
   OTHER = 'OTHER',
 }
 
@@ -23,6 +24,7 @@ export const CATEGORY_LABELS: Record<ItemCategory, string> = {
   [ItemCategory.JEWELRY]: 'Jewelry',
   [ItemCategory.BOOKS]: 'Books',
   [ItemCategory.SPORTS_EQUIPMENT]: 'Sports Equipment',
+  [ItemCategory.PERISHABLES]: 'Perishables',
   [ItemCategory.OTHER]: 'Other',
 };
 
@@ -37,6 +39,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
   [ItemCategory.JEWELRY]: 'Gem',
   [ItemCategory.BOOKS]: 'Book',
   [ItemCategory.SPORTS_EQUIPMENT]: 'Dumbbell',
+  [ItemCategory.PERISHABLES]: 'Apple',
   [ItemCategory.OTHER]: 'Package',
 };
 
@@ -51,6 +54,7 @@ export const CATEGORY_COLORS: Record<ItemCategory, string> = {
   [ItemCategory.JEWELRY]: '#f97316',
   [ItemCategory.BOOKS]: '#06b6d4',
   [ItemCategory.SPORTS_EQUIPMENT]: '#84cc16',
+  [ItemCategory.PERISHABLES]: '#ef4444',
   [ItemCategory.OTHER]: '#64748b',
 };
 
@@ -106,6 +110,11 @@ export const ITEM_CATEGORIES: Record<ItemCategory, { label: string; icon: string
     label: CATEGORY_LABELS[ItemCategory.SPORTS_EQUIPMENT],
     icon: CATEGORY_ICONS[ItemCategory.SPORTS_EQUIPMENT],
     color: 'lime',
+  },
+  [ItemCategory.PERISHABLES]: {
+    label: CATEGORY_LABELS[ItemCategory.PERISHABLES],
+    icon: CATEGORY_ICONS[ItemCategory.PERISHABLES],
+    color: 'red',
   },
   [ItemCategory.OTHER]: {
     label: CATEGORY_LABELS[ItemCategory.OTHER],

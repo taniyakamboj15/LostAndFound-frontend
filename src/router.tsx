@@ -11,8 +11,11 @@ const Login = lazy(() => import('@pages/Login'));
 const Register = lazy(() => import('@pages/Register'));
 const Dashboard = lazy(() => import('@pages/Dashboard'));
 const PublicSearch = lazy(() => import('@pages/PublicSearch'));
+const AnonymousClaim = lazy(() => import('@pages/AnonymousClaim'));
 const ItemsList = lazy(() => import('@pages/ItemsList'));
 const CreateItem = lazy(() => import('@pages/CreateItem'));
+const BulkIntake = lazy(() => import('@pages/BulkIntake'));
+const MatchingDashboard = lazy(() => import('@pages/MatchingDashboard'));
 const EditItem = lazy(() => import('@pages/EditItem'));
 const ItemDetail = lazy(() => import('@pages/ItemDetail'));
 const ClaimsList = lazy(() => import('@pages/ClaimsList'));
@@ -30,6 +33,9 @@ const Terms = lazy(() => import('@pages/Terms'));
 const Privacy = lazy(() => import('@pages/Privacy'));
 const UploadProof = lazy(() => import('@pages/UploadProof'));
 const VerifyEmail = lazy(() => import('@pages/VerifyEmail'));
+const FraudDashboard = lazy(() => import('@pages/FraudDashboard'));
+const NotificationPreferences = lazy(() => import('@pages/NotificationPreferences'));
+const TransferManagement = lazy(() => import('@pages/TransferManagement'));
 
 import {
   analyticsLoader,
@@ -75,6 +81,10 @@ export const router = createBrowserRouter([
         element: <SuspenseWrapper><PublicSearch /></SuspenseWrapper>,
       },
       {
+        path: '/claims/anonymous',
+        element: <SuspenseWrapper><AnonymousClaim /></SuspenseWrapper>,
+      },
+      {
         path: ROUTES.DASHBOARD,
         element: <SuspenseWrapper><ProtectedRoute><Dashboard /></ProtectedRoute></SuspenseWrapper>,
       },
@@ -86,6 +96,14 @@ export const router = createBrowserRouter([
         path: '/items/create',
         element: <SuspenseWrapper><ProtectedRoute><CreateItem /></ProtectedRoute></SuspenseWrapper>,
         action: createItemAction,
+      },
+      {
+        path: '/items/bulk-intake',
+        element: <SuspenseWrapper><ProtectedRoute roles={['ADMIN', 'STAFF']}><BulkIntake /></ProtectedRoute></SuspenseWrapper>,
+      },
+      {
+        path: ROUTES.MATCHING,
+        element: <SuspenseWrapper><ProtectedRoute roles={['ADMIN', 'STAFF']}><MatchingDashboard /></ProtectedRoute></SuspenseWrapper>,
       },
       {
         path: '/items/:id/edit',
@@ -155,6 +173,18 @@ export const router = createBrowserRouter([
         element: <SuspenseWrapper><ProtectedRoute roles={['ADMIN']}><AdminStaff /></ProtectedRoute></SuspenseWrapper>,
         loader: usersLoader,
         action: usersAction,
+      },
+      {
+        path: '/admin/fraud',
+        element: <SuspenseWrapper><ProtectedRoute roles={['ADMIN', 'STAFF']}><FraudDashboard /></ProtectedRoute></SuspenseWrapper>,
+      },
+      {
+        path: '/admin/transfers',
+        element: <SuspenseWrapper><ProtectedRoute roles={['ADMIN', 'STAFF']}><TransferManagement /></ProtectedRoute></SuspenseWrapper>,
+      },
+      {
+        path: '/settings/notifications',
+        element: <SuspenseWrapper><ProtectedRoute><NotificationPreferences /></ProtectedRoute></SuspenseWrapper>,
       },
     ],
   },

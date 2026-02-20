@@ -80,6 +80,12 @@ export const itemSchema = yup.object({
   finderName: yup.string().optional(),
   finderContact: yup.string().optional(),
   identifyingFeatures: yup.string().optional(),
+  // Structured markers
+  brand: yup.string().optional(),
+  color: yup.string().optional(),
+  itemSize: yup.string().optional(),
+  bagContents: yup.string().optional(),
+  secretIdentifiers: yup.string().optional(),
 });
 
 export const editItemSchema = itemSchema.shape({
@@ -125,6 +131,11 @@ export const lostReportSchema = yup.object({
     .min(1, 'At least one identifying feature is required')
     .default([])
     .required(),
+  // Structured markers
+  brand: yup.string().optional(),
+  color: yup.string().optional(),
+  itemSize: yup.string().optional(),
+  bagContents: yup.string().optional(),
 });
 
 export const createReportFormSchema = lostReportSchema.shape({
@@ -143,6 +154,7 @@ export const claimSchema = yup.object({
     .min(10, 'Description must be at least 10 characters')
     .required('Description is required'),
   lostReportId: yup.string().optional(),
+  preferredPickupLocation: yup.string().required('Please select a preferred pickup location'),
 });
 
 // Pickup Schema
@@ -168,8 +180,15 @@ export const storageSchema = yup.object({
   location: yup.string().min(3, 'Location must be at least 3 characters').required('Location is required'),
   shelfNumber: yup.string().optional(),
   binNumber: yup.string().optional(),
-  capacity: yup.number().positive('Capacity must be positive').required('Capacity is required'),
+  capacity: yup.object({
+    small: yup.number().min(0, 'Must be at least 0').required('Required'),
+    medium: yup.number().min(0, 'Must be at least 0').required('Required'),
+    large: yup.number().min(0, 'Must be at least 0').required('Required'),
+  }).required(),
   isActive: yup.boolean().required(),
+  isPickupPoint: yup.boolean().required('Required'),
+  city: yup.string().min(2, 'City must be at least 2 characters').required('City is required'),
+  address: yup.string().optional(),
 });
 
 export const reportSchema = lostReportSchema;

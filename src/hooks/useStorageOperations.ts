@@ -24,7 +24,13 @@ export const useStorageOperations = () => {
   const prepareStorageFormData = useCallback((data: StorageFormData, editingId?: string) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value.toString());
+      if (key === 'capacity' && typeof value === 'object') {
+        Object.entries(value).forEach(([size, amount]) => {
+          formData.append(`capacity.${size}`, (amount as number | string).toString());
+        });
+      } else {
+        formData.append(key, value.toString());
+      }
     });
     formData.append('intent', editingId ? 'update-storage' : 'create-storage');
     if (editingId) {

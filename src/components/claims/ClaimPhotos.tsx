@@ -21,6 +21,9 @@ const ClaimPhotos = ({ itemPhotos, proofDocuments }: ClaimPhotosProps) => {
                 src={photo.path.startsWith('http') ? photo.path : `${API_BASE_URL}/${photo.path}`}
                 alt={`Found item ${index + 1}`}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             </div>
           ))}
@@ -41,6 +44,9 @@ const ClaimPhotos = ({ itemPhotos, proofDocuments }: ClaimPhotosProps) => {
                 src={doc.path.startsWith('http') ? doc.path : `${API_BASE_URL}/${doc.path}`}
                 alt={`Proof ${index + 1}`}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             </div>
           ))}

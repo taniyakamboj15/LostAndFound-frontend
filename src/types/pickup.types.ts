@@ -15,6 +15,12 @@ export interface Pickup {
       paidAt?: string;
       transactionId?: string;
     };
+    preferredPickupLocation?: {
+      _id: string;
+      name: string;
+      location: string;
+      city?: string;
+    } | string;
   };
   claimantId: {
     _id: string;

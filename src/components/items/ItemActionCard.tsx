@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { Edit3, Eye, Search, HeartHandshake, LogIn } from 'lucide-react';
+import { Edit3, Eye, Search, HeartHandshake } from 'lucide-react';
 import { Button, Card } from '@components/ui';
 import { ItemStatus } from '@constants/status';
 import { Item } from '../../types/item.types';
@@ -41,25 +40,16 @@ const ItemActionCard = ({
       </h2>
       <div className="space-y-4">
         {item.status === ItemStatus.AVAILABLE && (
-          user ? (
-            <Button
-              variant="primary"
-              fullWidth
-              size="lg"
-              className="py-6 shadow-md shadow-blue-200 hover:shadow-lg transition-all"
-              onClick={onClaimClick}
-            >
-              <HeartHandshake className="mr-2 h-5 w-5" />
-              File a Claim
-            </Button>
-          ) : (
-            <Link to={`/login?redirect=/items/${item._id}`}>
-              <Button variant="primary" fullWidth size="lg" className="py-6">
-                <LogIn className="mr-2 h-5 w-5" />
-                Login to Claim
-              </Button>
-            </Link>
-          )
+          <Button
+            variant="primary"
+            fullWidth
+            size="lg"
+            className="py-6 shadow-md shadow-blue-200 hover:shadow-lg transition-all"
+            onClick={onClaimClick}
+          >
+            <HeartHandshake className="mr-2 h-5 w-5" />
+            {user ? 'File a Claim' : 'Claim This Item'}
+          </Button>
         )}
         
         {isAdminOrStaff && (

@@ -38,8 +38,11 @@ const ItemPhotosForm = ({
                   <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                     <img 
                       src={photo.path.startsWith('http') ? photo.path : `${API_BASE_URL}/${photo.path}`} 
-                      alt={photo.filename} 
+                      alt={`Item photo ${index + 1}`}
                       className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
                     />
                   </div>
                   <button
@@ -94,7 +97,10 @@ const ItemPhotosForm = ({
                 <img
                   src={preview}
                   alt={`Preview ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-lg"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
                 <button
                   type="button"

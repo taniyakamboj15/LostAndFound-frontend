@@ -223,7 +223,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 gap-4">
               {(isAdmin() || isStaff()) && (
                 <>
-                  <Link to="/items/create" className="group p-5 bg-blue-50/50 rounded-2xl hover:bg-blue-50 transition-all border border-blue-100/30 text-left block relative overflow-hidden">
+                  <Link to={ROUTES.ITEMS_NEW} className="group p-5 bg-blue-50/50 rounded-2xl hover:bg-blue-50 transition-all border border-blue-100/30 text-left block relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                        <Package className="h-12 w-12" />
                     </div>
@@ -231,13 +231,21 @@ const Dashboard = () => {
                     <p className="font-extrabold text-gray-900">Register Item</p>
                     <p className="text-xs text-blue-600 font-medium mt-1">Add new found object</p>
                   </Link>
-                  <Link to="/claims" className="group p-5 bg-purple-50/50 rounded-2xl hover:bg-purple-50 transition-all border border-purple-100/30 text-left block relative overflow-hidden">
+                  <Link to={ROUTES.CLAIMS} className="group p-5 bg-purple-50/50 rounded-2xl hover:bg-purple-50 transition-all border border-purple-100/30 text-left block relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                        <Users className="h-12 w-12" />
                     </div>
                     <Users className="h-7 w-7 text-purple-600 mb-3" />
                     <p className="font-extrabold text-gray-900">Review Claims</p>
                     <p className="text-xs text-purple-600 font-medium mt-1">Verify ownership</p>
+                  </Link>
+                  <Link to={ROUTES.MATCHING} className="group p-5 bg-indigo-50/50 rounded-2xl hover:bg-indigo-50 transition-all border border-indigo-100/30 text-left block relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                       <Search className="h-12 w-12" />
+                    </div>
+                    <Search className="h-7 w-7 text-indigo-600 mb-3" />
+                    <p className="font-extrabold text-gray-900">Matching Engine</p>
+                    <p className="text-xs text-indigo-600 font-medium mt-1">Configure & review matches</p>
                   </Link>
                 </>
               )}

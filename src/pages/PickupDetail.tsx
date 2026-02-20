@@ -1,25 +1,32 @@
-import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import BackButton from '@components/ui/BackButton';
 import { Calendar, Clock, MapPin, Package, ShieldCheck, CheckCircle, AlertCircle, QrCode } from 'lucide-react';
 import { Card, Badge, Button, Spinner } from '@components/ui';
-import { usePickupDetail } from '@hooks/usePickups';
 import { formatDate } from '@utils/formatters';
 import { ComponentErrorBoundary } from '@components/feedback';
-import { useAuth } from '@hooks/useAuth';
 
 import PickupQRCode from '@components/pickups/PickupQRCode';
 import PickupLogistics from '@components/pickups/PickupLogistics';
 import PickupItemInfo from '@components/pickups/PickupItemInfo';
 import PickupClaimantInfo from '@components/pickups/PickupClaimantInfo';
 import ScanPickupModal from '@components/claims/ScanPickupModal';
-import { useState } from 'react';
+
+// Hooks
+import { usePickupDetailPage } from '@hooks/usePickupDetailPage';
 
 const PickupDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { pickup, isLoading, isCompleting, completePickup, refresh } = usePickupDetail(id);
-  const { isStaff, isAdmin } = useAuth();
-  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const {
+    pickup,
+    isLoading,
+    isCompleting,
+    completePickup,
+    isStaff,
+    isAdmin,
+    isScanModalOpen,
+    openScanModal,
+    closeScanModal,
+    onVerifySuccess
+  } = usePickupDetailPage();
 
   if (isLoading || !pickup) {
     return (
@@ -102,7 +109,14 @@ const PickupDetail = () => {
                      <div className="p-2 bg-blue-50 rounded-lg">
                         <MapPin className="h-5 w-5 text-blue-600" />
                      </div>
-                     <span className="font-bold text-gray-900">Main Security Office</span>
+                     <div className="flex flex-col">
+                        <span className="font-bold text-gray-900">
+                          {typeof pickup.claimId === 'object' && pickup.claimId.preferredPickupLocation && typeof pickup.claimId.preferredPickupLocation === 'object' ? pickup.claimId.preferredPickupLocation.name : 'Main Security Office'}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
+                          {typeof pickup.claimId === 'object' && pickup.claimId.preferredPickupLocation && typeof pickup.claimId.preferredPickupLocation === 'object' ? pickup.claimId.preferredPickupLocation.city : 'Central Branch'}
+                        </span>
+                     </div>
                   </div>
                </div>
                <div className="p-8 space-y-2">
@@ -133,7 +147,7 @@ const PickupDetail = () => {
                      ) : (
                         <Button 
                           variant="primary" 
-                          onClick={() => setIsScanModalOpen(true)}
+                          onClick={openScanModal}
                           className="w-full h-12 rounded-xl shadow-lg shadow-blue-600/20 bg-blue-600 hover:bg-blue-700"
                         >
                           <QrCode className="h-5 w-5 mr-2" />
@@ -194,11 +208,8 @@ const PickupDetail = () => {
 
       <ScanPickupModal 
         isOpen={isScanModalOpen}
-        onClose={() => setIsScanModalOpen(false)}
-        onVerifySuccess={() => {
-          setIsScanModalOpen(false);
-          refresh();
-        }}
+        onClose={closeScanModal}
+        onVerifySuccess={onVerifySuccess}
       />
     </ComponentErrorBoundary>
   );

@@ -8,6 +8,10 @@ export interface CreateReportFormData {
   contactEmail: string;
   contactPhone?: string;
   identifyingFeatures: string[];
+  brand?: string;
+  color?: string;
+  itemSize?: string;
+  bagContents?: string;
 }
 
 

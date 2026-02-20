@@ -10,4 +10,10 @@ export interface CreateItemFormData {
   estimatedValue?: number;
   storageLocation?: string | null;
   identifyingFeatures?: string;
+  // Structured markers
+  brand?: string;
+  color?: string;
+  itemSize?: string;
+  bagContents?: string;
+  secretIdentifiers?: string;
 }

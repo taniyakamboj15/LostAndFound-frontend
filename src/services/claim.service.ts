@@ -109,4 +109,15 @@ export const claimService = {
     );
     return response.data;
   },
+  /**
+   * File an anonymous claim for a found item
+   * @param data Claim details including email
+   * @returns Created claim response
+   */
+  fileAnonymous: async (data: { itemId: string; email: string; description: string } | FormData): Promise<ClaimResponse> => {
+    const response = await api.post<ClaimResponse>(API_ENDPOINTS.CLAIMS.ANONYMOUS, data, {
+      headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
+    });
+    return response.data;
+  },
 };

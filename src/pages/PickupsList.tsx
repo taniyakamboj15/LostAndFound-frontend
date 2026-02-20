@@ -1,25 +1,28 @@
-import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Calendar as MapIcon, List as ListIcon, AlertCircle } from 'lucide-react';
-import { Card, Input, Button, Spinner, Select } from '@components/ui';
-import { usePickups } from '@hooks/usePickups';
+import { Card, Input, Button, Spinner, Select, Pagination } from '@components/ui';
 import { ComponentErrorBoundary } from '@components/feedback';
 import PickupCard from '@components/pickups/PickupCard';
 import CalendarView from '@components/pickups/CalendarView';
-import { Pagination } from '@components/ui';
+
+// Hooks
+import { usePickupsListPage } from '@hooks/usePickupsListPage';
 
 const PickupsList = () => {
-  const { pickups, isLoading, error, filters, updateFilters, pagination, handlePageChange, refresh } = usePickups();
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
-  const [showFilters, setShowFilters] = useState(false);
-
-  const handleSearch = useCallback(() => {
-    refresh();
-  }, [refresh]);
-
-  const handleFilterChange = (key: string, value: string) => {
-    updateFilters({ ...filters, [key]: value, page: 1 as any });
-  };
+  const {
+    pickups,
+    isLoading,
+    error,
+    filters,
+    pagination,
+    viewMode,
+    setViewMode,
+    showFilters,
+    toggleFilters,
+    handleSearch,
+    handleFilterChange,
+    handlePageChange
+  } = usePickupsListPage();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -99,7 +102,7 @@ const PickupsList = () => {
                 <Button variant="primary" onClick={handleSearch} className="h-12 px-8 font-bold">
                   Search
                 </Button>
-                <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="h-12">
+                <Button variant="outline" onClick={toggleFilters} className="h-12">
                   <Filter className="h-4 w-4 mr-2" />
                   Filters
                 </Button>

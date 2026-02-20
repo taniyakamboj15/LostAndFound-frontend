@@ -15,6 +15,7 @@ import { PUBLIC_NAV_ITEMS, PROTECTED_NAV_ITEMS, STAFF_NAV_ITEMS, ADMIN_NAV_ITEMS
 import { authService } from '@services/auth.service';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@utils/errors';
+import { NotificationsDropdown } from '../notifications/NotificationsDropdown';
 
 const Navbar = () => {
   const location = useLocation();
@@ -135,6 +136,9 @@ const Navbar = () => {
                   <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mt-1">{user?.role}</p>
                 </div>
 
+                {/* Notifications */}
+                <NotificationsDropdown />
+
                 <button
                   onClick={handleLogout}
                   className="hidden md:flex p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -197,15 +201,19 @@ const Navbar = () => {
                         <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
                         <p className="text-xs text-gray-500 uppercase">{user?.role}</p>
                     </div>
-                    {!user?.isEmailVerified && (
-                        <button
-                          onClick={handleResendVerification}
-                          disabled={isResending}
-                          className="text-xs text-amber-600 font-medium"
-                        >
-                          Verify Email
-                        </button>
-                    )}
+                    
+                    <div className="flex items-center gap-3">
+                        <NotificationsDropdown />
+                        {!user?.isEmailVerified && (
+                            <button
+                              onClick={handleResendVerification}
+                              disabled={isResending}
+                              className="text-xs text-amber-600 font-medium"
+                            >
+                              Verify Email
+                            </button>
+                        )}
+                    </div>
                  </div>
                  <button
                     onClick={handleLogout}

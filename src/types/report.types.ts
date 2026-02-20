@@ -20,6 +20,11 @@ export interface LostReport {
   contactEmail: string;
   contactPhone?: string;
   identifyingFeatures: string[];
+  // Structured markers
+  brand?: string;
+  color?: string;
+  itemSize?: string;
+  bagContents?: string[];
   matches?: unknown[]; 
   matchCount?: number;
   createdAt: string;
@@ -35,6 +40,10 @@ export interface CreateLostReportData {
   contactEmail?: string;
   contactPhone?: string;
   identifyingFeatures: string[];
+  brand?: string;
+  color?: string;
+  itemSize?: string;
+  bagContents?: string[];
 }
 
 // Update Lost Report Data

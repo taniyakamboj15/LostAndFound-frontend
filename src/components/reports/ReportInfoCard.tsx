@@ -22,6 +22,42 @@ const ReportInfoCard = ({ report }: ReportInfoCardProps) => {
           <p className="text-gray-700 text-lg leading-relaxed bg-gray-50/50 p-6 rounded-2xl italic border border-gray-100/50">
             "{report.description}"
           </p>
+
+          {(report.brand || report.color || report.itemSize) && (
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {report.brand && (
+                <div className="bg-white p-4 rounded-2xl border border-blue-50">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand</p>
+                  <p className="font-bold text-gray-900">{report.brand}</p>
+                </div>
+              )}
+              {report.color && (
+                <div className="bg-white p-4 rounded-2xl border border-blue-50">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Color</p>
+                  <p className="font-bold text-gray-900">{report.color}</p>
+                </div>
+              )}
+              {report.itemSize && (
+                <div className="bg-white p-4 rounded-2xl border border-blue-50">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Size</p>
+                  <p className="font-bold text-gray-900">{report.itemSize}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {report.bagContents && report.bagContents.length > 0 && (
+            <div className="mt-6 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+               <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-2">Internal Bag Contents</p>
+               <div className="flex flex-wrap gap-2">
+                  {report.bagContents.map((item, idx) => (
+                    <span key={idx} className="bg-white px-3 py-1 rounded-lg text-xs font-bold text-gray-600 border border-amber-200">
+                      {item}
+                    </span>
+                  ))}
+               </div>
+            </div>
+          )}
         </div>
       </Card>
 

@@ -48,7 +48,6 @@ export const useItemsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
   
-  // Memoized initial filters to avoid recreation
   const initialFilters = useMemo<AdminItemFilters>(() => ({
     keyword: searchParams.get('keyword') || '',
     category: (searchParams.get('category') as ItemCategory) || '',
@@ -65,7 +64,6 @@ export const useItemsList = () => {
   
   const debouncedFilters = useDebounce(filters, 500);
   
-  // Track active requests to avoid race conditions
   const requestCount = useRef(0);
 
   const fetchItems = useCallback(async (currentFilters: AdminItemFilters) => {

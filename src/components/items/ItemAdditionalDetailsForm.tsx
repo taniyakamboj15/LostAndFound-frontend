@@ -21,7 +21,7 @@ const ItemAdditionalDetailsForm = ({ register, errors, locations }: ItemAddition
           { value: '', label: 'Select a storage location' },
           ...locations.map((loc) => ({
             value: loc._id,
-            label: `${loc.name} (${loc.location})`,
+            label: `${loc.name} (${loc.city || 'Unknown City'}) - [${loc.location}]`,
           })),
         ]}
         helperText="Where the item is currently stored"

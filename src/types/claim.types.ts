@@ -21,8 +21,18 @@ export interface Claim {
   lostReportId?: {
     _id: string;
     description: string;
+    brand?: string;
+    color?: string;
+    itemSize?: string;
+    bagContents?: string[];
   } | string;
   description: string;
+  preferredPickupLocation?: {
+    _id: string;
+    name: string;
+    location: string;
+    city?: string;
+  } | string;
   status: ClaimStatus;
   proofDocuments: ProofDocument[];
   verificationNotes?: string;
@@ -44,6 +54,16 @@ export interface Claim {
   filedAt?: string; // Some parts of the UI use filedAt
   createdAt: string;
   updatedAt: string;
+  fraudRiskScore?: number;
+  fraudFlags?: string[];
+  challengeHistory?: Array<{
+    _id: string;
+    question: string;
+    answer?: string;
+    matchScore?: number;
+    passed?: boolean;
+    conductedAt: string;
+  }>;
   timeline: Array<{
     action: string;
     actor: string;
@@ -56,6 +76,7 @@ export interface CreateClaimData {
   itemId: string;
   description: string;
   lostReportId?: string;
+  preferredPickupLocation?: string;
 }
 
 // Upload Proof Data

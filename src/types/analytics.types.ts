@@ -12,6 +12,7 @@ export interface AnalyticsMetrics {
   pendingReviewClaims: number;
   readyForHandoverClaims: number;
   expiringItems: number;
+  highRiskClaims: number;
   categoryBreakdown: Record<ItemCategory, number>;
 }
 
@@ -67,6 +68,8 @@ export interface AnalyticsLoaderData {
   metrics: AnalyticsMetrics | null;
   trends: TrendDataPoint[];
   paymentAnalytics: PaymentAnalytics | null;
+  workload: StaffWorkload | null;
+  accuracy: PredictionAccuracy[] | null;
   error: string | null;
 }
 
@@ -108,4 +111,24 @@ export interface PaymentAnalytics {
 export interface PaymentAnalyticsResponse {
   success: boolean;
   data: PaymentAnalytics;
+}
+
+// ─── Predictive Analytics Types ──────────────────────────────────────────
+
+export interface PredictionData {
+  minDays: number;
+  maxDays: number;
+  confidence: number;
+  likelihood: number;
+}
+
+export interface StaffWorkload {
+  intake: { hour: number; intakeCount: number }[];
+  claims: { hour: number; claimCount: number }[];
+}
+
+export interface PredictionAccuracy {
+  _id: ItemCategory;
+  avgError: number;
+  count: number;
 }

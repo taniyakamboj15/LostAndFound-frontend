@@ -6,6 +6,8 @@ import {
   TrendsResponse,
   DispositionStatsResponse,
   PaymentAnalyticsResponse,
+  StaffWorkload,
+  PredictionAccuracy,
 } from '../types';
 
 export const analyticsService = {
@@ -38,6 +40,16 @@ export const analyticsService = {
  
   getPaymentAnalytics: async (): Promise<PaymentAnalyticsResponse> => {
     const response = await api.get<PaymentAnalyticsResponse>(API_ENDPOINTS.PAYMENTS.ANALYTICS);
+    return response.data;
+  },
+
+  getStaffWorkload: async (): Promise<{ success: boolean; data: StaffWorkload }> => {
+    const response = await api.get<{ success: boolean; data: StaffWorkload }>(API_ENDPOINTS.ANALYTICS.STAFF_WORKLOAD);
+    return response.data;
+  },
+
+  getPredictionAccuracy: async (): Promise<{ success: boolean; data: PredictionAccuracy[] }> => {
+    const response = await api.get<{ success: boolean; data: PredictionAccuracy[] }>(API_ENDPOINTS.ANALYTICS.PREDICTION_ACCURACY);
     return response.data;
   },
 };

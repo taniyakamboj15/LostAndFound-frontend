@@ -1,9 +1,11 @@
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDebounce } from './useDebounce';
-
+import api from '../services/api';
 import { PublicItem, ApiResponse } from '../types';
-
 import { PublicSearchFilters } from '../types/ui.types';
+
+import { API_ENDPOINTS } from '../constants/api';
 
 export const usePublicSearch = () => {
   const [filters, setFilters] = useState<PublicSearchFilters>({
@@ -29,13 +31,14 @@ export const usePublicSearch = () => {
       if (currentFilters.dateFrom) queryParams.append('dateFoundFrom', currentFilters.dateFrom);
       if (currentFilters.dateTo) queryParams.append('dateFoundTo', currentFilters.dateTo);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/items/public/search?${queryParams.toString()}`);
-      const data: ApiResponse<PublicItem[]> = await response.json();
+      const response = await api.get<ApiResponse<PublicItem[]>>(
+        `${API_ENDPOINTS.PUBLIC.ITEMS}?${queryParams.toString()}`
+      );
       
-      if (data.success && data.data) {
-        setItems(data.data);
+      if (response.data.success && response.data.data) {
+        setItems(response.data.data);
       } else {
-        throw new Error(data.message || 'Search failed');
+        throw new Error(response.data.message || 'Search failed');
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to search items';
@@ -59,12 +62,11 @@ export const usePublicSearch = () => {
       dateTo: '',
     };
     setFilters(cleared);
-    // Debounce will handle the fetch
   }, []);
 
   useEffect(() => {
     fetchItems(debouncedFilters);
-  }, [debouncedFilters]); // Trigger fetch when debounced filters change
+  }, [debouncedFilters, fetchItems]);
 
   return useMemo(() => ({
     items,

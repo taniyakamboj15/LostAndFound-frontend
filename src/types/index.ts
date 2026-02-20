@@ -10,3 +10,5 @@ export * from './disposition.types';
 export * from './analytics.types';
 export * from './activity.types';
 export * from './api.types';
+export * from './transfer.types';
+export * from './notification.types';

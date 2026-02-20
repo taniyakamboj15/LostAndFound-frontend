@@ -1,10 +1,16 @@
 import { Card } from '@components/ui';
 import { formatRelativeTime } from '@utils/formatters';
 
+interface PaymentMetadata {
+  amount: number;
+  transactionId: string;
+}
+
 interface TimelineEvent {
   action: string;
   actor: string;
   timestamp: string;
+  metadata?: PaymentMetadata;
 }
 
 interface ClaimTimelineProps {
@@ -28,6 +34,15 @@ const ClaimTimeline = ({ timeline }: ClaimTimelineProps) => (
             <p className="text-sm text-gray-600">
               by {event.actor} • {formatRelativeTime(event.timestamp)}
             </p>
+            {event.action === 'PAYMENT COMPLETED' && event.metadata && (
+              <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-sm text-green-800 font-semibold mb-1">Payment Successful</p>
+                <div className="text-xs text-green-700 flex justify-between">
+                  <span>Amount: ₹{event.metadata.amount}</span>
+                  <span className="font-mono">TXN: {event.metadata.transactionId}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ))}

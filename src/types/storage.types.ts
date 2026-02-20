@@ -5,9 +5,20 @@ export interface Storage {
   location: string;
   shelfNumber?: string;
   binNumber?: string;
-  capacity: number;
-  currentCount: number;
+  capacity: {
+    small: number;
+    medium: number;
+    large: number;
+  };
+  currentCount: {
+    small: number;
+    medium: number;
+    large: number;
+  };
   isActive: boolean;
+  isPickupPoint: boolean;
+  city: string;
+  address?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,7 +31,14 @@ export interface CreateStorageData {
   location: string;
   shelfNumber?: string;
   binNumber?: string;
-  capacity: number;
+  capacity: {
+    small: number;
+    medium: number;
+    large: number;
+  };
+  isPickupPoint: boolean;
+  city: string;
+  address?: string;
 }
 
 // Update Storage Data
@@ -29,8 +47,15 @@ export interface UpdateStorageData {
   location?: string;
   shelfNumber?: string;
   binNumber?: string;
-  capacity?: number;
+  capacity?: {
+    small?: number;
+    medium?: number;
+    large?: number;
+  };
   isActive?: boolean;
+  isPickupPoint?: boolean;
+  city?: string;
+  address?: string;
 }
 
 // Storage Form Data
@@ -39,8 +64,15 @@ export interface StorageFormData {
   location: string;
   shelfNumber?: string;
   binNumber?: string;
-  capacity: number;
+  capacity: {
+    small: number;
+    medium: number;
+    large: number;
+  };
   isActive: boolean;
+  isPickupPoint: boolean;
+  city: string;
+  address?: string;
 }
 
 // Storage Response

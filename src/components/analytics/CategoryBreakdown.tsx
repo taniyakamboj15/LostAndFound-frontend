@@ -19,8 +19,9 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const CategoryBreakdown = ({ metrics }: MetricProps) => {
-  const sortedCategories = Object.entries(metrics.categoryBreakdown)
-    .sort(([, a], [, b]) => b - a);
+  const breakdown = metrics?.categoryBreakdown || {};
+  const sortedCategories = Object.entries(breakdown)
+    .sort(([, a], [, b]) => (b as number) - (a as number));
 
   return (
     <Card className="p-6">

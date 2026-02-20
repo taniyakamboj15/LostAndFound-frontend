@@ -13,12 +13,15 @@ export const useStorage = () => {
   const toast = useToast();
 
   const fetchLocations = useCallback(async () => {
-    if (!isAdmin() && !isStaff()) return;
-    
     setIsLoading(true);
     setError(null);
     try {
-      const response = await storageService.getAll();
+      // If Staff/Admin, get all storage locations
+      // If Claimant, get only sanctioned pickup points
+      const response = (isAdmin() || isStaff())
+        ? await storageService.getAll()
+        : await storageService.getPickupPoints();
+        
       setLocations(response.data);
     } catch (err: unknown) {
       const message = getErrorMessage(err);

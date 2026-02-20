@@ -27,6 +27,7 @@ export interface Match {
   locationScore: number;
   reasons?: string[];
   notified: boolean;
+  status: 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'AUTO_CONFIRMED';
   createdAt: string;
 }
 

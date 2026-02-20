@@ -52,6 +52,7 @@ export const ROUTES = {
   
   // Staff
   STAFF: '/admin/staff',
+  MATCHING: '/admin/matching',
 } as const;
 
 // Helper to build route with params

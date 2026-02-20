@@ -25,6 +25,7 @@ export interface Item {
     _id: string;
     name: string;
     location: string;
+    city: string;
   };
   retentionPeriodDays: number;
   retentionExpiryDate: string;
@@ -44,6 +45,16 @@ export interface Item {
   finderName?: string;
   finderContact?: string;
   identifyingFeatures?: string[];
+  brand?: string;
+  color?: string;
+  itemSize?: string;
+  bagContents?: string[];
+  secretIdentifiers?: string[];
+  prediction?: {
+    likelihood: number;
+    estimatedDaysToClaim: number;
+    confidence: number;
+  };
   createdAt: string;
   updatedAt: string;
 }

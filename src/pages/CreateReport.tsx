@@ -1,52 +1,31 @@
 import { InfoIcon } from '@assets/svg';
-import { useNavigate } from 'react-router-dom';
-import { useForm, useFieldArray, Resolver } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Input, Select, Textarea, Card } from '@components/ui';
 import { ITEM_CATEGORIES } from '@constants/categories';
-import { useCreateReport } from '@hooks/useReports';
-import { useAuth } from '@hooks/useAuth';
 import { ComponentErrorBoundary } from '@components/feedback';
-import {  CreateReportFormValues } from '../types/createReport.types';
-import { CreateLostReportData } from '../types/report.types';
-import { createReportFormSchema } from '../validators';
 
+// Hooks
+import { useCreateReportPage } from '@hooks/useCreateReportPage';
 
+const ITEM_COLORS = ['Black', 'White', 'Silver', 'Gold', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Gray', 'Multicolor'];
+const ITEM_SIZES = [
+  { value: 'SMALL', label: 'Small (fits in a hand)' },
+  { value: 'MEDIUM', label: 'Medium (briefcase-sized)' },
+  { value: 'LARGE', label: 'Large (suitcase-sized)' },
+];
 
 const CreateReport = () => {
-  const navigate = useNavigate();
-  const { createReport, isSubmitting } = useCreateReport();
-  const { user } = useAuth();
-
   const {
     register,
     handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<CreateReportFormValues>({
-    resolver: yupResolver(createReportFormSchema) as unknown as Resolver<CreateReportFormValues>,
-    defaultValues: {
-      identifyingFeatures: [],
-      contactEmail: user?.email || '',
-      dateLost: new Date().toISOString().split('T')[0],
-    }
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'identifyingFeatures',
-  });
-
-  const onSubmit = async (data: CreateReportFormValues) => {
-    const submissionData: CreateLostReportData = {
-      ...data,
-      dateLost: new Date(data.dateLost).toISOString(),
-      identifyingFeatures: data.identifyingFeatures.map(f => f.text),
-      category: data.category,
-    };
-
-    await createReport(submissionData);
-  };
+    errors,
+    fields,
+    removeFeature,
+    addIdentifyingFeature,
+    onSubmitHandler,
+    isSubmitting,
+    selectedCategory,
+    navigate
+  } = useCreateReportPage();
 
   return (
     <ComponentErrorBoundary title="Submit Report Error">
@@ -59,7 +38,7 @@ const CreateReport = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-6">
           {/* Item Information */}
           <Card>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -91,6 +70,47 @@ const CreateReport = () => {
                 rows={4}
                 {...register('description')}
               />
+            </div>
+          </Card>
+
+          {/* Structured Markers */}
+          <Card>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Structured Markers</h2>
+            <p className="text-sm text-gray-500 mb-4">These fields feed the matching engine with precise, weighted data.</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input
+                  label="Brand"
+                  placeholder="e.g., Apple, Samsung, Nike"
+                  fullWidth
+                  {...register('brand')}
+                />
+                <Select
+                  label="Color"
+                  options={[
+                    { value: '', label: 'Select color' },
+                    ...ITEM_COLORS.map(c => ({ value: c.toUpperCase(), label: c }))
+                  ]}
+                  fullWidth
+                  {...register('color')}
+                />
+                <Select
+                  label="Size"
+                  options={[{ value: '', label: 'Select size' }, ...ITEM_SIZES]}
+                  fullWidth
+                  {...register('itemSize')}
+                />
+              </div>
+              {selectedCategory === 'BAGS' && (
+                <Textarea
+                  label="Bag Contents"
+                  placeholder="e.g., Laptop, charger, wallet (comma-separated)"
+                  helperText="What was inside the bag? This helps strictly verify ownership."
+                  fullWidth
+                  rows={2}
+                  {...register('bagContents')}
+                />
+              )}
             </div>
           </Card>
 
@@ -170,11 +190,10 @@ const CreateReport = () => {
                     onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        const input = e.currentTarget;
-                        const value = input.value.trim();
+                        const value = e.currentTarget.value.trim();
                         if (value) {
-                          append({ text: value });
-                          input.value = '';
+                          addIdentifyingFeature(value);
+                          e.currentTarget.value = '';
                         }
                       }
                     }}
@@ -186,7 +205,7 @@ const CreateReport = () => {
                        const input = document.getElementById('feature-input') as HTMLInputElement;
                        const value = input.value.trim();
                        if (value) {
-                          append({ text: value });
+                          addIdentifyingFeature(value);
                           input.value = '';
                        }
                     }}
@@ -205,7 +224,7 @@ const CreateReport = () => {
                     <span className="text-sm text-gray-700">{field.text}</span>
                     <button
                       type="button"
-                      onClick={() => remove(index)}
+                      onClick={() => removeFeature(index)}
                       className="text-gray-400 hover:text-red-500 transition-colors"
                       title="Remove feature"
                     >
