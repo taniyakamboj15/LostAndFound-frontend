@@ -109,4 +109,37 @@ export const claimService = {
     );
     return response.data;
   },
+
+  /**
+   * Request identity/ownership proof from claimant manually (Staff/Admin only)
+   * @param id Claim ID
+   * @returns Updated claim response
+   */
+  requestProof: async (id: string): Promise<ClaimResponse> => {
+    const response = await api.post<ClaimResponse>(
+      API_ENDPOINTS.CLAIMS.REQUEST_PROOF(id)
+    );
+    return response.data;
+  },
+  /**
+   * File an anonymous claim for a found item
+   * @param data Claim details including email
+   * @returns Created claim response
+   */
+  fileAnonymous: async (data: { itemId: string; email: string; description: string } | FormData): Promise<ClaimResponse> => {
+    const response = await api.post<ClaimResponse>(API_ENDPOINTS.CLAIMS.ANONYMOUS, data, {
+      headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
+    });
+    return response.data;
+  },
+
+  /**
+   * Delete a claim
+   * @param id Claim ID
+   * @returns Success response
+   */
+  deleteClaim: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete<{ success: boolean; message: string }>(API_ENDPOINTS.CLAIMS.BY_ID(id));
+    return response.data;
+  },
 };

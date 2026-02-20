@@ -2,6 +2,7 @@ import { ShieldCheck, Gift, Trash2, Gavel } from 'lucide-react';
 import { ClaimStatus, DispositionType } from './status';
 import { BadgeVariant } from '@app-types/ui.types';
 import { SelectHTMLAttributes } from 'react';
+import { ROUTES } from './routes';
 export interface ErrorConfig {
   title: string;
   message: string;
@@ -30,6 +31,10 @@ export const CLAIM_STATUS_VARIANT_MAP: Record<ClaimStatus | 'PENDING', BadgeVari
   [ClaimStatus.PICKUP_BOOKED]: 'info',
   [ClaimStatus.RETURNED]: 'info',
   [ClaimStatus.FILED]: 'default',
+  [ClaimStatus.AWAITING_TRANSFER]: 'warning',
+  [ClaimStatus.AWAITING_RECOVERY]: 'warning',
+  [ClaimStatus.IN_TRANSIT]: 'info',
+  [ClaimStatus.ARRIVED]: 'success',
   PENDING: 'warning', // For legacy support or specific UI states
 } as const;
 
@@ -119,7 +124,9 @@ export const PROTECTED_NAV_ITEMS = [
 ] as const;
 
 export const STAFF_NAV_ITEMS = [
-  {label: 'Items', path: '/items'},
+  {label: 'Items', path: ROUTES.ITEMS},
+  {label: 'Matching', path: ROUTES.MATCHING},
+  {label: 'Transfers', path: ROUTES.TRANSFERS},
 ] as const;
 
 export const ADMIN_NAV_ITEMS = [
@@ -165,3 +172,11 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   fullWidth?: boolean;
   options: Array<{ value: string; label: string; disabled?: boolean }>;
 }
+
+
+export const ITEM_COLORS = ['Black', 'White', 'Silver', 'Gold', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Grey', 'Beige', 'Multi'];
+export const ITEM_SIZES = [
+  { value: 'SMALL', label: 'Small' },
+  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'LARGE', label: 'Large' },
+];

@@ -48,7 +48,7 @@ export const useFileClaim = (itemId: string | null) => {
     setProofFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const submitClaim = useCallback(async (description: string) => {
+  const submitClaim = useCallback(async (description: string, preferredPickupLocation?: string) => {
     if (!itemId) {
       toast.error('Invalid item ID');
       return;
@@ -65,6 +65,7 @@ export const useFileClaim = (itemId: string | null) => {
       const claimRes = await claimService.create({
         itemId,
         description,
+        preferredPickupLocation,
       });
 
       const claimId = claimRes.data._id;
@@ -85,13 +86,40 @@ export const useFileClaim = (itemId: string | null) => {
     }
   }, [itemId, proofFiles, navigate, toast]);
 
+  const fileAnonymousClaim = useCallback(async (data: { itemId: string, email: string, description: string, preferredPickupLocation?: string }) => {
+    setIsSubmitting(true);
+    try {
+      // Create FormData
+      const formData = new FormData();
+      formData.append('itemId', data.itemId);
+      formData.append('email', data.email);
+      formData.append('description', data.description);
+      if (data.preferredPickupLocation) {
+        formData.append('preferredPickupLocation', data.preferredPickupLocation);
+      }
+      
+      proofFiles.forEach((file) => {
+        formData.append('files', file);
+      });
+
+      await claimService.fileAnonymous(formData);
+      toast.success('Anonymous claim filed successfully! Check your email for the token.');
+      navigate('/');
+    } catch (err: unknown) {
+      toast.error('Failed to file anonymous claim');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [proofFiles, toast, navigate]);
+
   return useMemo(() => ({
     proofFiles,
     isSubmitting,
     handleFileChange,
     removeFile,
     submitClaim,
-  }), [proofFiles, isSubmitting, handleFileChange, removeFile, submitClaim]);
+    fileAnonymousClaim,
+  }), [proofFiles, isSubmitting, handleFileChange, removeFile, submitClaim, fileAnonymousClaim]);
 };
 
 export const useClaimsList = () => {
@@ -173,7 +201,17 @@ export const useClaimsList = () => {
     filters,
     updateFilters,
     refresh: () => fetchClaims(filters),
+    deleteClaim: async (id: string) => {
+      try {
+        await claimService.deleteClaim(id);
+        toast.success('Claim deleted successfully');
+        fetchClaims(filters);
+      } catch (err: unknown) {
+        const error = err as ApiError;
+        toast.error(error.message || 'Failed to delete claim');
+      }
+    },
     pagination,
     handlePageChange
-  }), [claims, isLoading, error, filters, updateFilters, fetchClaims, pagination, handlePageChange]);
+  }), [claims, isLoading, error, filters, updateFilters, fetchClaims, pagination, handlePageChange, toast]);
 };

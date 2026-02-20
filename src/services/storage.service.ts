@@ -31,6 +31,24 @@ export const storageService = {
   },
 
   /**
+   * Get sanitized pickup points for claimants
+   * @returns List of pickup locations
+   */
+  getPickupPoints: async (): Promise<StorageListResponse> => {
+    const response = await api.get<StorageListResponse>(`${API_ENDPOINTS.STORAGE.BASE}/pickup-points`);
+    return response.data;
+  },
+
+  /**
+   * Get unique cities for filtering
+   * @returns List of city names
+   */
+  getCities: async (): Promise<ApiResponse<string[]>> => {
+    const response = await api.get<ApiResponse<string[]>>(`${API_ENDPOINTS.STORAGE.BASE}/cities`);
+    return response.data;
+  },
+
+  /**
    * Get detailed info for a specific storage shelf/bin
    * @param id Storage ID
    * @returns Detailed storage profile

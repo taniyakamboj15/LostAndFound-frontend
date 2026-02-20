@@ -1,9 +1,11 @@
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDebounce } from './useDebounce';
-
+import api from '../services/api';
 import { PublicItem, ApiResponse } from '../types';
-
 import { PublicSearchFilters } from '../types/ui.types';
+
+import { API_ENDPOINTS } from '../constants/api';
 
 export const usePublicSearch = () => {
   const [filters, setFilters] = useState<PublicSearchFilters>({
@@ -15,10 +17,16 @@ export const usePublicSearch = () => {
   });
   const debouncedFilters = useDebounce(filters, 500);
   const [items, setItems] = useState<PublicItem[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 6,
+    total: 0,
+    totalPages: 0
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchItems = useCallback(async (currentFilters: PublicSearchFilters = debouncedFilters) => {
+  const fetchItems = useCallback(async (currentFilters: PublicSearchFilters = debouncedFilters, pageNum: number = pagination.page) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -28,14 +36,21 @@ export const usePublicSearch = () => {
       if (currentFilters.location) queryParams.append('location', currentFilters.location);
       if (currentFilters.dateFrom) queryParams.append('dateFoundFrom', currentFilters.dateFrom);
       if (currentFilters.dateTo) queryParams.append('dateFoundTo', currentFilters.dateTo);
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/items/public/search?${queryParams.toString()}`);
-      const data: ApiResponse<PublicItem[]> = await response.json();
       
-      if (data.success && data.data) {
-        setItems(data.data);
+      queryParams.append('page', pageNum.toString());
+      queryParams.append('limit', pagination.limit.toString());
+
+      const response = await api.get<ApiResponse<PublicItem[]>>(
+        `${API_ENDPOINTS.PUBLIC.ITEMS}?${queryParams.toString()}`
+      );
+      
+      if (response.data.success && response.data.data) {
+        setItems(response.data.data);
+        if (response.data.pagination) {
+          setPagination(response.data.pagination);
+        }
       } else {
-        throw new Error(data.message || 'Search failed');
+        throw new Error(response.data.message || 'Search failed');
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to search items';
@@ -44,10 +59,15 @@ export const usePublicSearch = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedFilters]);
+  }, [debouncedFilters, pagination.limit, pagination.page]);
+
+  const setPage = useCallback((page: number) => {
+    setPagination(prev => ({ ...prev, page }));
+  }, []);
 
   const updateFilters = useCallback((newFilters: PublicSearchFilters) => {
     setFilters(newFilters);
+    setPagination(prev => ({ ...prev, page: 1 })); // Reset to page 1 on filter change
   }, []);
 
   const clearFilters = useCallback(() => {
@@ -59,20 +79,22 @@ export const usePublicSearch = () => {
       dateTo: '',
     };
     setFilters(cleared);
-    // Debounce will handle the fetch
+    setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
   useEffect(() => {
-    fetchItems(debouncedFilters);
-  }, [debouncedFilters]); // Trigger fetch when debounced filters change
+    fetchItems(debouncedFilters, pagination.page);
+  }, [debouncedFilters, pagination.page, fetchItems]);
 
   return useMemo(() => ({
     items,
+    pagination,
     isLoading,
     error,
     filters,
     updateFilters,
     clearFilters,
+    setPage,
     search: fetchItems,
-  }), [items, isLoading, error, filters, updateFilters, clearFilters, fetchItems]);
+  }), [items, pagination, isLoading, error, filters, updateFilters, clearFilters, setPage, fetchItems]);
 };

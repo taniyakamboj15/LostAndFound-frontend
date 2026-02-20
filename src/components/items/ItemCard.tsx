@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, MapPin, Calendar, ArrowRight } from 'lucide-react';
+import { Package, MapPin, Calendar, ArrowRight, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, Badge } from '@components/ui';
 import { ItemCardProps } from '@app-types/ui.types';
@@ -9,7 +9,22 @@ import { ITEM_STATUS } from '@constants/status';
 import { formatDate } from '@utils/formatters';
 import { getItemImageUrl } from '@utils/image';
 
-const ItemCard = memo(({ item }: ItemCardProps) => {
+import { useAuth } from '@hooks/useAuth';
+import { useItemActions } from '@hooks/useItems';
+
+const ItemCard = memo(({ item, onDeleteSuccess }: ItemCardProps) => {
+  const { user } = useAuth();
+  const { deleteItem } = useItemActions();
+  const isStaffOrAdmin = user?.role === 'STAFF' || user?.role === 'ADMIN';
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      deleteItem(item._id, onDeleteSuccess);
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ y: -8 }}
@@ -27,14 +42,29 @@ const ItemCard = memo(({ item }: ItemCardProps) => {
                   transition={{ duration: 0.6 }}
                   src={getItemImageUrl(item.photos[0].path) || ''} 
                   alt={item.description} 
-                  className="w-full h-full object-cover" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    if (target.nextElementSibling) {
+                      (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                    }
+                  }}
                 />
-              ) : (
+              ) : null}
+              
+              {(!item.photos || item.photos.length === 0) && (
                 <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50">
                   <Package className="h-12 w-12 mb-2 stroke-[1.5]" />
                   <span className="text-xs font-medium">No Image Available</span>
                 </div>
               )}
+              
+              {/* Fallback for when img errors out, initially hidden */}
+              <div style={{ display: 'none' }} className="w-full h-full flex-col items-center justify-center text-gray-400 bg-gray-50">
+                <Package className="h-12 w-12 mb-2 stroke-[1.5]" />
+                <span className="text-xs font-medium">Image Not Found</span>
+              </div>
               
               {/* Status Badge Overlay */}
               <div className="absolute top-3 left-3 flex flex-wrap gap-2">
@@ -43,14 +73,56 @@ const ItemCard = memo(({ item }: ItemCardProps) => {
                     {ITEM_CATEGORIES[item.category].label}
                   </span>
                 </div>
+                {item.brand && (
+                  <div className="backdrop-blur-md bg-blue-600/80 rounded-full px-3 py-1 border border-blue-400/50 shadow-sm">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white">
+                      {item.brand}
+                    </span>
+                  </div>
+                )}
+                {item.color && (
+                  <div className="backdrop-blur-md bg-white/90 rounded-full px-3 py-1 border border-gray-200 shadow-sm">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
+                      {item.color}
+                    </span>
+                  </div>
+                )}
+                {/* Privacy Indicator - If brand is conceptually missing, assume redacted */}
+                {!item.brand && !item.secretIdentifiers && (
+                  <div className="backdrop-blur-md bg-slate-800/80 rounded-full px-3 py-1 border border-slate-600/50 shadow-sm flex items-center gap-1" title="Sensitive details hidden for privacy">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-100">
+                      Private
+                    </span>
+                  </div>
+                )}
               </div>
 
               {item.isHighValue && (
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-3 right-3 flex gap-2">
                   <div className="bg-amber-100/90 backdrop-blur-sm border border-amber-200 text-amber-700 rounded-full px-2 py-1 shadow-sm">
                     <Package className="h-3 w-3" />
                   </div>
+                  {isStaffOrAdmin && (
+                    <button 
+                      onClick={handleDelete}
+                      className="bg-white/90 backdrop-blur-sm border border-red-100 text-red-500 rounded-full p-1 shadow-sm hover:bg-red-50 transition-colors"
+                      title="Delete Item"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
                 </div>
+              )}
+              {!item.isHighValue && isStaffOrAdmin && (
+                 <div className="absolute top-3 right-3">
+                    <button 
+                      onClick={handleDelete}
+                      className="bg-white/90 backdrop-blur-sm border border-red-100 text-red-500 rounded-full p-1 shadow-sm hover:bg-red-50 transition-colors"
+                      title="Delete Item"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                 </div>
               )}
             </div>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+// Removed unused React import
 import { FeeBreakdown as IFeeBreakdown } from '../../types/ui.types';
 
 interface FeeBreakdownProps {
@@ -6,7 +6,7 @@ interface FeeBreakdownProps {
   isLoading?: boolean;
 }
 
-const FeeBreakdown: React.FC<FeeBreakdownProps> = ({ breakdown, isLoading }) => {
+const FeeBreakdown = ({ breakdown, isLoading }: FeeBreakdownProps) => {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-3 p-4 bg-gray-50 rounded-lg">

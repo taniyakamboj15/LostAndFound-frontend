@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useAuth } from './useAuth';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { itemService } from '@services/item.service';
 import { useToast } from './useToast';
@@ -45,17 +46,17 @@ export const useItemDetail = (id: string | null) => {
 };
 
 export const useItemsList = () => {
+  const { isAuthenticated, isAdmin, isStaff } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
   
-  // Memoized initial filters to avoid recreation
   const initialFilters = useMemo<AdminItemFilters>(() => ({
     keyword: searchParams.get('keyword') || '',
     category: (searchParams.get('category') as ItemCategory) || '',
     status: (searchParams.get('status') as ItemStatus) || '',
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '10'),
-  }), []); // Only on mount
+  }), [searchParams]);
 
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,10 +66,10 @@ export const useItemsList = () => {
   
   const debouncedFilters = useDebounce(filters, 500);
   
-  // Track active requests to avoid race conditions
   const requestCount = useRef(0);
 
   const fetchItems = useCallback(async (currentFilters: AdminItemFilters) => {
+    if (!isAuthenticated || (!isAdmin() && !isStaff())) return;
     const requestId = ++requestCount.current;
     setIsLoading(true);
     setError(null);
@@ -106,7 +107,7 @@ export const useItemsList = () => {
         setIsLoading(false);
       }
     }
-  }, [toast]);
+  }, [toast, isAuthenticated, isAdmin, isStaff]);
 
   // Sync URL search params when filters change
   const updateFilters = useCallback((newFilters: AdminItemFilters) => {
@@ -123,10 +124,15 @@ export const useItemsList = () => {
     setSearchParams(newParams, { replace: true });
   }, [setSearchParams]);
 
-  // Fetch when debounced filters change
+  // Fetch when debounced filters change or auth status changes
   useEffect(() => {
-    fetchItems(debouncedFilters);
-  }, [debouncedFilters, fetchItems]);
+    if (isAuthenticated && (isAdmin() || isStaff())) {
+      fetchItems(debouncedFilters);
+    } else {
+      setItems([]);
+      setIsLoading(false);
+    }
+  }, [debouncedFilters, fetchItems, isAuthenticated, isAdmin, isStaff]);
 
   return useMemo(() => ({
     items,
@@ -137,6 +143,24 @@ export const useItemsList = () => {
     refresh: () => fetchItems(filters),
     pagination,
   }), [items, isLoading, error, filters, updateFilters, fetchItems, pagination]);
+};
+
+export const useItemActions = () => {
+  const toast = useToast();
+  
+  const deleteItem = useCallback(async (id: string, onSuccess?: () => void) => {
+    try {
+      await itemService.deleteItem(id);
+      toast.success('Item deleted');
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  }, [toast]);
+
+  return useMemo(() => ({
+    deleteItem,
+  }), [deleteItem]);
 };
 
 export const useCreateItem = () => {

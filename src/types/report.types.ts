@@ -15,13 +15,19 @@ export interface LostReport {
   keywords: string[];
   locationLost: string;
   dateLost: string;
-  reportedBy: ReportedBy;
+  reportedBy: string | ReportedBy;
   submittedBy?: ReportedBy; 
   contactEmail: string;
   contactPhone?: string;
   identifyingFeatures: string[];
+  // Structured markers
+  brand?: string;
+  color?: string;
+  itemSize?: string;
+  bagContents?: string[];
   matches?: unknown[]; 
   matchCount?: number;
+  starredBy?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +41,10 @@ export interface CreateLostReportData {
   contactEmail?: string;
   contactPhone?: string;
   identifyingFeatures: string[];
+  brand?: string;
+  color?: string;
+  itemSize?: string;
+  bagContents?: string[];
 }
 
 // Update Lost Report Data

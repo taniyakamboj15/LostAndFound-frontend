@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from './Button';
 import { cn } from '../../utils/helpers';
@@ -10,18 +9,30 @@ interface PaginationProps {
   className?: string;
 }
 
-export const Pagination: React.FC<PaginationProps> = ({
+export const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
   className,
-}) => {
+}: PaginationProps) => {
   if (totalPages <= 1) return null;
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-  // Logic to show a window of pages can be added here if totalPages is large
-  // For now, simple list suitable for moderate page counts
+  const renderPageButton = (page: number) => (
+    <button
+        key={page}
+        onClick={() => onPageChange(page)}
+        className={cn(
+        'w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors',
+        currentPage === page
+            ? 'bg-primary-600 text-white'
+            : 'text-gray-600 hover:bg-gray-100'
+        )}
+    >
+        {page}
+    </button>
+  );
 
   return (
     <div className={cn('flex items-center justify-center space-x-2', className)}>
@@ -43,20 +54,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 page === totalPages ||
                 (page >= currentPage - 1 && page <= currentPage + 1)
              ) {
-                 return (
-                    <button
-                        key={page}
-                        onClick={() => onPageChange(page)}
-                        className={cn(
-                        'w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors',
-                        currentPage === page
-                            ? 'bg-primary-600 text-white'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        )}
-                    >
-                        {page}
-                    </button>
-                 );
+                 return renderPageButton(page);
              } else if (
                  (page === currentPage - 2 && currentPage > 3) ||
                  (page === currentPage + 2 && currentPage < totalPages - 2)

@@ -35,12 +35,20 @@ const ItemsList = () => {
             <p className="text-gray-600 mt-1">Browse and manage found items</p>
           </div>
           {(isAdmin() || isStaff()) && (
-            <Link to="/items/create">
-              <Button variant="primary">
-                <Plus className="h-5 w-5 mr-2" />
-                Register Item
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/items/bulk-intake">
+                <Button variant="outline">
+                   <Package className="h-5 w-5 mr-2" />
+                   Bulk Upload
+                </Button>
+              </Link>
+              <Link to="/items/create">
+                <Button variant="primary">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Register Item
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
 
@@ -75,7 +83,11 @@ const ItemsList = () => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {items.map((item) => (
-                <ItemCard key={item._id} item={item} />
+                <ItemCard 
+                  key={item._id} 
+                  item={item} 
+                  onDeleteSuccess={handleSearch}
+                />
               ))}
             </div>
             

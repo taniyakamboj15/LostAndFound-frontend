@@ -10,6 +10,7 @@ export const useToast = () => {
   }, []);
 
   const error = useCallback((message: string) => {
+    if (!message) return;
     toast.error(message, {
       duration: 4000,
       position: 'top-right',

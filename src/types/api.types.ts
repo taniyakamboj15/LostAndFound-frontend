@@ -12,8 +12,9 @@ export interface PaginationMeta {
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
-  data?: T;
+  data: T;
   error?: string;
+  pagination?: PaginationMeta;
 }
 
 // API Error Detail
@@ -31,6 +32,7 @@ export interface ApiError {
     field: string;
     message: string;
   }>;
+  silent?: boolean;
 }
 
 // Loading State

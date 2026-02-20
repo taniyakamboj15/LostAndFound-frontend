@@ -13,7 +13,7 @@ interface ItemInfoCardProps {
 const ItemInfoCard = ({ item, currentUser, isStaffOrAdmin }: ItemInfoCardProps) => {
   const isClaimedByCurrentUser = 
     item.claimedBy && 
-    (typeof item.claimedBy === 'object' ? item.claimedBy._id : item.claimedBy) === (isStaffOrAdmin ? null : currentUser?._id); 
+    (typeof item.claimedBy === 'object' ? item.claimedBy._id : item.claimedBy) === (isStaffOrAdmin ? null : currentUser?._id);
 
   return (
     <div className="space-y-6">
@@ -47,24 +47,55 @@ const ItemInfoCard = ({ item, currentUser, isStaffOrAdmin }: ItemInfoCardProps) 
         </div>
       </Card>
 
-      {/* Identifying Features */}
-      {item.identifyingFeatures && item.identifyingFeatures.length > 0 && (
-        <Card className="p-6 border-none shadow-md bg-white">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">
-            Identifying Features
+      {/* Identifying Features & Structured Markers */}
+      <Card className="p-6 border-none shadow-md bg-white">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400">
+            Item Details
           </h2>
-          <div className="flex flex-wrap gap-3">
-            {item.identifyingFeatures.map((feature: string, index: number) => (
-              <span
-                key={index}
-                className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold border border-blue-100 shadow-sm"
-              >
-                {feature}
-              </span>
-            ))}
-          </div>
-        </Card>
-      )}
+          {!item.brand && !item.secretIdentifiers && !isStaffOrAdmin && (
+            <Badge variant="warning" className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border-slate-200">
+              Sensitive Details Hidden
+            </Badge>
+          )}
+        </div>
+        
+        <div className="flex flex-wrap gap-3">
+          {item.brand && (
+            <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold border border-gray-200">
+              Brand: {item.brand}
+            </span>
+          )}
+          {item.color && (
+            <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold border border-gray-200">
+              Color: {item.color}
+            </span>
+          )}
+          {item.itemSize && (
+            <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold border border-gray-200">
+              Size: {item.itemSize}
+            </span>
+          )}
+          {item.bagContents && item.bagContents.length > 0 && (
+             <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold border border-gray-200">
+              Contents: {item.bagContents.join(', ')}
+            </span>
+          )}
+          {item.identifyingFeatures && item.identifyingFeatures.map((feature: string, index: number) => (
+            <span
+              key={index}
+              className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold border border-blue-100 shadow-sm"
+            >
+              {feature}
+            </span>
+          ))}
+          {!item.brand && !item.secretIdentifiers && !isStaffOrAdmin && (
+             <span className="px-4 py-2 bg-slate-50 text-slate-500 rounded-xl text-sm italic border border-slate-200 w-full">
+               Specific identifiers (brand, serial numbers, unique contents) are hidden until ownership is verified.
+             </span>
+          )}
+        </div>
+      </Card>
 
       {/* Keywords */}
       {item.keywords && item.keywords.length > 0 && (

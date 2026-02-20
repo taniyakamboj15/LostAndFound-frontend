@@ -87,12 +87,30 @@ export const useReportsList = () => {
     filters,
     updateFilters,
     refresh: () => fetchReports(filters),
+    deleteReport: async (id: string) => {
+      try {
+        await reportService.deleteReport(id);
+        toast.success('Report deleted');
+        fetchReports(filters);
+      } catch (err) {
+        toast.error(getErrorMessage(err));
+      }
+    },
+    toggleStar: async (id: string) => {
+      try {
+        await reportService.toggleStar(id);
+        fetchReports(filters);
+      } catch (err) {
+        toast.error(getErrorMessage(err));
+      }
+    },
     pagination,
     handlePageChange
-  }), [reports, isLoading, error, filters, updateFilters, fetchReports, pagination, handlePageChange]);
+  }), [reports, isLoading, error, filters, updateFilters, fetchReports, pagination, handlePageChange, toast]);
 };
 
 export const useReportDetail = (id: string | null) => {
+  const navigate = useNavigate();
   const [report, setReport] = useState<LostReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +144,17 @@ export const useReportDetail = (id: string | null) => {
     isLoading,
     error,
     refresh: fetchReport,
-  }), [report, isLoading, error, fetchReport]);
+    deleteReport: async () => {
+      if (!id) return;
+      try {
+        await reportService.deleteReport(id);
+        toast.success('Report deleted successfully');
+        navigate('/reports');
+      } catch (err: unknown) {
+        toast.error(getErrorMessage(err));
+      }
+    }
+  }), [report, isLoading, error, fetchReport, id, navigate, toast]);
 };
 
 export const useCreateReport = () => {

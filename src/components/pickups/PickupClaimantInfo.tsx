@@ -1,6 +1,5 @@
 import { Card } from '@components/ui';
 import { User, Mail, Phone, AlertCircle, CreditCard } from 'lucide-react';
-import { formatDate } from '@utils/formatters';
 import { Pickup } from '../../types/pickup.types';
 
 interface PickupClaimantInfoProps {
@@ -8,92 +7,92 @@ interface PickupClaimantInfoProps {
 }
 
 const PickupClaimantInfo = ({ pickup }: PickupClaimantInfoProps) => (
-  <div className="space-y-6">
+  <>
     {/* Claimant Information */}
-    <Card>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+    <Card className="p-6 rounded-[1.5rem] border-none shadow-lg shadow-gray-100/50 bg-white border border-gray-100">
+      <h2 className="text-base font-black text-gray-900 mb-4 flex items-center gap-2">
+        <div className="p-1.5 bg-blue-50 rounded-lg">
+          <User className="h-4 w-4 text-blue-600" />
+        </div>
         Claimant Details
       </h2>
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-            <User className="h-5 w-5 text-gray-500" />
+          <div className="h-10 w-10 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center shadow-inner">
+            <User className="h-5 w-5 text-gray-400" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900">{pickup.claimantId?.name}</p>
-            <p className="text-xs text-gray-500">Claimant</p>
+          <div className="min-w-0">
+            <p className="text-base font-black text-gray-900 truncate leading-none">{pickup.claimantId?.name}</p>
+            <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest mt-1">Verified Recipient</p>
           </div>
         </div>
         
-        <div className="space-y-2 pt-2">
-          <div className="flex items-center gap-3 text-sm text-gray-600">
-            <Mail className="h-4 w-4" />
-            <span>{pickup.claimantId?.email}</span>
+        <div className="grid grid-cols-1 gap-2 pt-1">
+          <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-100 group hover:bg-blue-50/50 transition-colors">
+            <Mail className="h-3.5 w-3.5 text-gray-400" />
+            <span className="text-xs font-bold text-gray-600 truncate">{pickup.claimantId?.email}</span>
           </div>
           {pickup.claimantId?.phone && (
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <Phone className="h-4 w-4" />
-              <span>{pickup.claimantId.phone}</span>
+            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-100 group hover:bg-blue-50/50 transition-colors">
+              <Phone className="h-3.5 w-3.5 text-gray-400" />
+              <span className="text-xs font-bold text-gray-600">{pickup.claimantId.phone}</span>
             </div>
           )}
         </div>
       </div>
     </Card>
 
-    {/* Important Info */}
-    {!pickup.isCompleted && (
-      <Card className="bg-amber-50 border-amber-200">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-amber-900">
-              Pickup Checklist
-            </p>
-            <ul className="text-sm text-amber-800 mt-2 space-y-2 list-disc list-inside">
-              <li>Bring a valid government photo ID</li>
-              <li>Have your QR code or reference ready</li>
-              <li>Arrive within your scheduled time window</li>
-              <li>Inspection of the item is required before sign-off</li>
-            </ul>
+    {/* Important Info & Fees Column */}
+    <div className="space-y-6">
+      {!pickup.isCompleted && (
+        <Card className="p-6 rounded-[1.5rem] bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 shadow-lg shadow-amber-500/5 relative overflow-hidden group">
+           <div className="absolute -right-2 -top-2 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+              <AlertCircle className="h-16 w-16 text-amber-600" />
+           </div>
+           <div className="flex items-start gap-3">
+            <div className="p-1.5 bg-white rounded-xl shadow-sm ring-1 ring-amber-500/10">
+              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+            </div>
+            <div className="relative z-10">
+              <p className="text-xs font-black text-amber-900 tracking-tight mb-2">
+                Checklist
+              </p>
+              <ul className="text-[10px] text-amber-800/80 space-y-1.5 font-bold">
+                <li className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-amber-400" /> Valid Govt. ID</li>
+                <li className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-amber-400" /> QR / Reference ID</li>
+                <li className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-amber-400" /> Arrive in window</li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </Card>
-    )}
+        </Card>
+      )}
 
-    {/* Fee Paid Card */}
-    {pickup.claimId?.paymentStatus === 'PAID' && pickup.claimId?.feeDetails && (
-      <Card>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <CreditCard className="h-5 w-5 text-emerald-600" />
-          Fee Paid
-        </h2>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Handling Fee</span>
-            <span className="font-medium text-gray-900">₹{pickup.claimId.feeDetails.handlingFee ?? '—'}</span>
+      {/* Fee Paid Card */}
+      {pickup.claimId?.paymentStatus === 'PAID' && pickup.claimId?.feeDetails && (
+        <Card className="p-6 rounded-[1.5rem] border-none shadow-lg shadow-emerald-500/5 bg-white border border-emerald-50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-3 opacity-[0.03]">
+             <CreditCard className="h-24 w-24 text-emerald-600" />
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Storage Fee</span>
-            <span className="font-medium text-gray-900">₹{pickup.claimId.feeDetails.storageFee ?? '—'}</span>
+          <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
+            <div className="p-1.5 bg-emerald-50 rounded-lg">
+              <CreditCard className="h-4 w-4 text-emerald-600" />
+            </div>
+            Payment
+          </h2>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
+              <span className="text-gray-400 uppercase tracking-widest text-[8px] font-black">Fees</span>
+              <span className="text-xs font-black text-gray-900">₹{pickup.claimId.feeDetails.totalAmount}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm">
+              <span className="text-emerald-900 font-black text-[10px] uppercase tracking-tighter">Paid Total</span>
+              <span className="text-emerald-700 text-lg font-black leading-none">₹{pickup.claimId.feeDetails.totalAmount?.toLocaleString('en-IN')}</span>
+            </div>
           </div>
-          <div className="flex justify-between text-sm font-bold border-t pt-2 mt-1">
-            <span className="text-gray-700">Total</span>
-            <span className="text-emerald-700">₹{pickup.claimId.feeDetails.totalAmount?.toLocaleString('en-IN')}</span>
-          </div>
-          {pickup.claimId.feeDetails.paidAt && (
-            <p className="text-xs text-gray-500 pt-1">
-              Paid on {formatDate(pickup.claimId.feeDetails.paidAt)}
-            </p>
-          )}
-          {pickup.claimId.feeDetails.transactionId && (
-            <p className="text-xs text-gray-400 font-mono truncate">
-              {`pi_...${pickup.claimId.feeDetails.transactionId.slice(-6)}`}
-            </p>
-          )}
-        </div>
-      </Card>
-    )}
-  </div>
+        </Card>
+      )}
+    </div>
+  </>
 );
 
 export default PickupClaimantInfo;

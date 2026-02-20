@@ -1,10 +1,10 @@
+import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { Package, TrendingUp } from 'lucide-react';
+import { Package, TrendingUp, Trash2 } from 'lucide-react';
 
-import { Badge, Spinner, Card } from '@components/ui';
+import { Badge, Spinner, Card, Button } from '@components/ui';
 import BackButton from '@components/ui/BackButton';
 import { ComponentErrorBoundary } from '@components/feedback';
 import ReportInfoCard from '@components/reports/ReportInfoCard';
@@ -23,7 +23,7 @@ import { Match } from '../types/match.types';
 const ReportDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { report, isLoading: loading } = useReportDetail(id || null);
+  const { report, isLoading: loading, deleteReport } = useReportDetail(id || null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
 
@@ -72,6 +72,22 @@ const ReportDetail = () => {
                   <span className="h-2 w-2 rounded-full bg-green-500 animate-ping" />
                   <span className="text-sm font-bold text-green-700">{report.matchCount} Active Matches</span>
                </div>
+             )}
+             
+             {(user?.role === 'ADMIN' || user?.role === 'STAFF' || 
+                (typeof report.reportedBy === 'string' ? report.reportedBy === user?.id : report.reportedBy?._id === user?.id)) && (
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 border-red-100"
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+                      deleteReport();
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Report
+                </Button>
              )}
           </motion.div>
         </div>

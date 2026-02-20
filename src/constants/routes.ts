@@ -52,6 +52,8 @@ export const ROUTES = {
   
   // Staff
   STAFF: '/admin/staff',
+  MATCHING: '/admin/matching',
+  TRANSFERS: '/admin/transfers',
 } as const;
 
 // Helper to build route with params
@@ -62,3 +64,6 @@ export const buildRoute = (route: string, params: Record<string, string>): strin
   });
   return path;
 };
+
+
+export const PUBLIC_PATHS = ['/', '/login', '/register', '/verify-email', '/terms', '/privacy', '/claims/anonymous'];

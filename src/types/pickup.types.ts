@@ -6,6 +6,12 @@ export interface Pickup {
     itemId: {
       _id: string;
       description: string;
+      storageLocation?: {
+        _id: string;
+        name: string;
+        location: string;
+        city?: string;
+      } | string;
     };
     paymentStatus?: string;
     feeDetails?: {
@@ -15,6 +21,12 @@ export interface Pickup {
       paidAt?: string;
       transactionId?: string;
     };
+    preferredPickupLocation?: {
+      _id: string;
+      name: string;
+      location: string;
+      city?: string;
+    } | string;
   };
   claimantId: {
     _id: string;
@@ -25,6 +37,12 @@ export interface Pickup {
   itemId: {
     _id: string;
     description: string;
+    storageLocation?: {
+      _id: string;
+      name: string;
+      location: string;
+      city?: string;
+    } | string;
   };
   pickupDate: string;
   startTime: string;

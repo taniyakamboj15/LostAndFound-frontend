@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Package, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, CheckCircle } from 'lucide-react';
 import { Card } from '@components/ui';
 import { formatDate } from '@utils/formatters';
 import { Pickup } from '../../types/pickup.types';
@@ -12,44 +12,54 @@ const PickupLogistics = ({ pickup }: PickupLogisticsProps) => {
   const { isStaff, isAdmin } = useAuth();
 
   return (
-    <Card>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
-        Pickup Details
+    <Card className="p-6 rounded-[1.5rem] border-none shadow-lg shadow-gray-100/50 bg-white border border-gray-100">
+      <h2 className="text-base font-black text-gray-900 mb-5 flex items-center gap-2">
+        <div className="p-1.5 bg-indigo-50 rounded-lg">
+          <Calendar className="h-4 w-4 text-indigo-600" />
+        </div>
+        Logistics
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="flex items-start gap-3">
-          <Calendar className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-gray-500">Scheduled Date</p>
-            <p className="text-gray-900 font-medium">{formatDate(pickup.pickupDate)}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex items-start gap-2.5 p-3 bg-gray-50 rounded-xl border border-gray-100">
+          <Calendar className="h-4 w-4 text-indigo-400 mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Date</p>
+            <p className="text-xs font-black text-gray-900">{formatDate(pickup.pickupDate)}</p>
           </div>
         </div>
 
-        <div className="flex items-start gap-3">
-          <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-gray-500">Scheduled Time</p>
-            <p className="text-gray-900 font-medium">{pickup.startTime} - {pickup.endTime}</p>
+        <div className="flex items-start gap-2.5 p-3 bg-gray-50 rounded-xl border border-gray-100">
+          <Clock className="h-4 w-4 text-indigo-400 mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Window</p>
+            <p className="text-xs font-black text-gray-900">{pickup.startTime} - {pickup.endTime}</p>
           </div>
         </div>
 
-        <div className="flex items-start gap-3">
-          <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-gray-500">Location</p>
-            <p className="text-gray-900 font-medium">Main Office, Lost & Found Dept.</p>
+        <div className="flex items-start gap-2.5 p-3 bg-gray-50 rounded-xl border border-gray-100">
+          <MapPin className="h-4 w-4 text-indigo-400 mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Point</p>
+            <p className="text-xs font-black text-gray-900 truncate">
+              {typeof pickup.claimId?.preferredPickupLocation === 'object'
+                ? `${pickup.claimId.preferredPickupLocation.name}${pickup.claimId.preferredPickupLocation.city ? `, ${pickup.claimId.preferredPickupLocation.city}` : ''}`
+                : typeof pickup.itemId?.storageLocation === 'object'
+                ? `${pickup.itemId.storageLocation.name}${pickup.itemId.storageLocation.city ? `, ${pickup.itemId.storageLocation.city}` : ''}`
+                : 'Main Security Office, Central Branch'}
+            </p>
+            {(isAdmin() || isStaff()) && (
+              (typeof pickup.claimId?.preferredPickupLocation === 'object' && pickup.claimId.preferredPickupLocation.location) ||
+              (typeof pickup.itemId?.storageLocation === 'object' && pickup.itemId.storageLocation.location)
+            ) && (
+              <p className="text-xs text-blue-500 font-bold mt-1 uppercase tracking-tighter">
+                Internal: {
+                  (typeof pickup.claimId?.preferredPickupLocation === 'object' && pickup.claimId.preferredPickupLocation.location) ||
+                  (typeof pickup.itemId?.storageLocation === 'object' && pickup.itemId.storageLocation.location)
+                }
+              </p>
+            )}
           </div>
         </div>
-
-        {pickup.referenceCode && !isStaff() && !isAdmin() && (
-          <div className="flex items-start gap-3">
-            <Package className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-gray-500">Reference Code</p>
-              <p className="text-gray-900 font-medium font-mono">{pickup.referenceCode}</p>
-            </div>
-          </div>
-        )}
       </div>
     
     {pickup.notes && (

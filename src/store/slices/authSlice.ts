@@ -132,8 +132,8 @@ const authSlice = createSlice({
         // Clear localStorage
         localStorage.removeItem(STORAGE_KEYS.USER);
         
-        // Force reload to ensure all states are cleared
-        window.location.reload();
+        // Redirect to home page to ensure a clean state
+        window.location.href = '/';
       });
 
     // Get Profile

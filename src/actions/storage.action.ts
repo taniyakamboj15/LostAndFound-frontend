@@ -11,10 +11,17 @@ export async function storageAction({ request }: ActionFunctionArgs) {
   const data = {
     name: formData.get('name') as string,
     location: formData.get('location') as string,
+    city: formData.get('city') as string,
+    address: formData.get('address') as string || undefined,
     shelfNumber: formData.get('shelfNumber') as string || undefined,
     binNumber: formData.get('binNumber') as string || undefined,
-    capacity: parseInt(formData.get('capacity') as string),
+    capacity: {
+      small: parseInt(formData.get('capacity.small') as string) || 0,
+      medium: parseInt(formData.get('capacity.medium') as string) || 0,
+      large: parseInt(formData.get('capacity.large') as string) || 0,
+    },
     isActive: formData.get('isActive') === 'true',
+    isPickupPoint: formData.get('isPickupPoint') === 'true',
   };
 
   try {

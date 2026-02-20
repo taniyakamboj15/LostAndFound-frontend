@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 import { FeeBreakdown as IFeeBreakdown } from '../../types/ui.types';
@@ -12,7 +12,7 @@ interface CheckoutFormProps {
   amount: number;
 }
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ onSuccess, amount }) => {
+const CheckoutForm = ({ onSuccess, amount }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -72,7 +72,7 @@ interface PaymentModalProps {
   onPaymentSuccess: (paymentIntent: string) => void;
 }
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, clientSecret, breakdown, onPaymentSuccess }) => {
+const PaymentModal = ({ isOpen, onClose, clientSecret, breakdown, onPaymentSuccess }: PaymentModalProps) => {
   if (!isOpen || !clientSecret) return null;
 
   return (

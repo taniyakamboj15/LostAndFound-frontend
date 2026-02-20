@@ -112,6 +112,7 @@ export interface ClaimCardProps {
 
 export interface ItemCardProps {
   item: Item;
+  onDeleteSuccess?: () => void;
 }
 
 export interface DispositionActionsProps {

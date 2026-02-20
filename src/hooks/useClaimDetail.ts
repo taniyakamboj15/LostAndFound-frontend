@@ -61,6 +61,10 @@ export const useClaimDetail = (id: string | null) => {
         await verifyClaim();
       } else if (status === ClaimStatus.REJECTED) {
         await rejectClaim({ reason: reason || 'No reason provided' });
+      } else if (status === ClaimStatus.IDENTITY_PROOF_REQUESTED) {
+        await claimService.requestProof(id);
+        toast.success('Proof requested successfully');
+        await fetchClaim();
       } else {
         // Handle other status updates if needed
         toast.error(`Status update to ${status} not implemented in this hook`);

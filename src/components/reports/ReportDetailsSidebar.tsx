@@ -48,7 +48,12 @@ const ReportDetailsSidebar = ({ report }: ReportDetailsSidebarProps) => {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Reported By</p>
-                  <p className="text-sm text-gray-900 font-bold">{(report.submittedBy || report.reportedBy)?.name || 'Unknown'}</p>
+                  <p className="text-sm text-gray-900 font-bold">
+                    {(() => {
+                      const reporter = report.submittedBy || report.reportedBy;
+                      return (reporter && typeof reporter === 'object') ? reporter.name : 'Unknown';
+                    })()}
+                  </p>
                 </div>
               </div>
             </div>

@@ -25,9 +25,20 @@ export interface Match {
   keywordScore: number;
   dateScore: number;
   locationScore: number;
+  colorScore?: number;
   reasons?: string[];
   notified: boolean;
+  status: 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'AUTO_CONFIRMED';
   createdAt: string;
+}
+
+
+export interface MatchFilters {
+  status?: string;
+  minConfidence?: number;
+  fromDate?: string;
+  toDate?: string;
+  search?: string;
 }
 
 // Match Score Details

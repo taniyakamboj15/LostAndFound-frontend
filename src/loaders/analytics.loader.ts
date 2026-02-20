@@ -3,9 +3,11 @@ import { getErrorMessage } from '@utils/errors';
 
 export async function analyticsLoader() {
   try {
-    const [metricsRes, trendsRes] = await Promise.all([
+    const [metricsRes, trendsRes, workloadRes, accuracyRes] = await Promise.all([
       analyticsService.getDashboard(),
       analyticsService.getTrends(),
+      analyticsService.getStaffWorkload(),
+      analyticsService.getPredictionAccuracy(),
     ]);
 
 
@@ -14,12 +16,13 @@ export async function analyticsLoader() {
       const payRes = await analyticsService.getPaymentAnalytics();
       paymentAnalytics = payRes.data;
     } catch {
-      // Non-admin users will get a 403 here
     }
 
     return {
       metrics: metricsRes.data,
       trends: trendsRes.data,
+      workload: workloadRes.data,
+      accuracy: accuracyRes.data,
       paymentAnalytics,
       error: null,
     };
@@ -28,6 +31,8 @@ export async function analyticsLoader() {
     return {
       metrics: null,
       trends: [],
+      workload: null,
+      accuracy: null,
       paymentAnalytics: null,
       error: getErrorMessage(error),
     };

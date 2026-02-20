@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_BASE_URL, STORAGE_KEYS } from '../constants';
 import { ApiError, BackendErrorDetail } from '../types';
+import { PUBLIC_PATHS } from '../constants/routes';
 
 
 const api: AxiosInstance = axios.create({
@@ -21,6 +22,7 @@ api.interceptors.request.use(
   }
 );
 
+
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
@@ -30,7 +32,8 @@ api.interceptors.response.use(
 
     const isAuthRequest = originalRequest.url?.includes('auth/login') || 
                          originalRequest.url?.includes('auth/register') ||
-                         originalRequest.url?.includes('auth/refresh');
+                         originalRequest.url?.includes('auth/refresh') ||
+                         originalRequest.url?.includes('auth/logout');
 
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       originalRequest._retry = true;
@@ -46,13 +49,26 @@ api.interceptors.response.use(
         // Retry original request - new cookies will be sent automatically
         return api(originalRequest);
       } catch (refreshError) {
+        const hadUser = !!localStorage.getItem(STORAGE_KEYS.USER);
+        
         // Clear user data on refresh failure
         localStorage.removeItem(STORAGE_KEYS.USER);
         
-        // Redirect to login
-        window.location.href = '/login';
+        const isPublicPath = PUBLIC_PATHS.includes(window.location.pathname);
         
-        return Promise.reject(refreshError);
+        if (!isPublicPath) {
+          window.location.href = '/login';
+        } else if (hadUser) {
+          window.location.reload();
+        }
+        
+        const apiError: ApiError = {
+          success: false,
+          message: (refreshError as AxiosError).message || 'Session expired',
+          silent: isPublicPath,
+        };
+
+        return Promise.reject(apiError);
       }
     }
 
@@ -75,11 +91,14 @@ api.interceptors.response.use(
       }
     }
     
+    const isPublicPath = PUBLIC_PATHS.includes(window.location.pathname);
+
     const apiError: ApiError = {
       success: false,
       message: errorMessage,
       error: errorData?.error,
       errors: errorData?.errors,
+      silent: error.response?.status === 401 && isPublicPath,
     };
 
     return Promise.reject(apiError);

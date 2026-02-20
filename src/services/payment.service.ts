@@ -1,5 +1,6 @@
 import api from './api';
 import { FeeBreakdown } from '../types/ui.types';
+import { API_ENDPOINTS } from '../constants/api';
 
 
 const getIdempotencyKey = (claimId: string): string => {
@@ -19,7 +20,7 @@ export const clearIdempotencyKey = (claimId: string): void => {
 export const paymentService = {
   getFeeBreakdown: (claimId: string) => {
     return api.get<{ success: boolean; data: FeeBreakdown }>(
-      `/api/payments/fee-breakdown/${claimId}`
+      API_ENDPOINTS.PAYMENTS.FEE_BREAKDOWN(claimId)
     );
   },
 
@@ -34,7 +35,7 @@ export const paymentService = {
         paymentIntentId: string;
       };
     }>(
-      '/api/payments/create-intent',
+      API_ENDPOINTS.PAYMENTS.CREATE_INTENT,
       { claimId },
       { headers: { 'Idempotency-Key': idempotencyKey } }
     );
@@ -42,7 +43,7 @@ export const paymentService = {
 
   verifyPayment: (paymentIntentId: string, claimId: string) => {
     return api.post<{ success: boolean; message: string }>(
-      '/api/payments/verify',
+      API_ENDPOINTS.PAYMENTS.VERIFY,
       { paymentIntentId, claimId }
     );
   },

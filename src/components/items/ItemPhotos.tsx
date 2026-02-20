@@ -57,6 +57,9 @@ const ItemPhotos = ({ photos, itemTitle }: ItemPhotosProps) => {
                   opacity: { duration: 0.2 }
                 }}
                 className="w-full h-full object-contain pointer-events-none"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-400">

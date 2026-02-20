@@ -49,6 +49,8 @@ export const API_ENDPOINTS = {
     PROOF: (id: string) => `/api/claims/${id}/proof`,
     VERIFY: (id: string) => `/api/claims/${id}/verify`,
     REJECT: (id: string) => `/api/claims/${id}/reject`,
+    REQUEST_PROOF: (id: string) => `/api/claims/${id}/request-proof`,
+    ANONYMOUS: '/api/claims/anonymous',
   },
   
   // Matches
@@ -75,6 +77,7 @@ export const API_ENDPOINTS = {
   DISPOSITION: {
     BASE: '/api/disposition',
     BY_ID: (id: string) => `/api/disposition/${id}`,
+    BY_ITEM: (itemId: string) => `/api/disposition/item/${itemId}`,
   },
   
   // Analytics
@@ -83,6 +86,8 @@ export const API_ENDPOINTS = {
     CATEGORY_BREAKDOWN: '/api/analytics/category-breakdown',
     TRENDS: '/api/analytics/trends',
     DISPOSITION_STATS: '/api/analytics/disposition-stats',
+    STAFF_WORKLOAD: '/api/analytics/staff-workload',
+    PREDICTION_ACCURACY: '/api/analytics/prediction-accuracy',
   },
   
   // Activities
@@ -106,4 +111,11 @@ export const API_ENDPOINTS = {
     VERIFY: '/api/payments/verify',
     ANALYTICS: '/api/analytics/payments',
   },
+
+  // Notifications
+  NOTIFICATIONS: {
+    BASE: '/api/notifications',
+    MARK_READ: (id: string) => `/api/notifications/${id}/read`,
+    MARK_ALL_READ: '/api/notifications/read-all',
+  }
 } as const;

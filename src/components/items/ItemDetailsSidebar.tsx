@@ -2,12 +2,15 @@ import { MapPin, Calendar, User, Package, Clock } from 'lucide-react';
 import { Card } from '@components/ui';
 import { formatDate, formatRelativeTime } from '@utils/formatters';
 import { Item } from '../../types/item.types';
+import { useAuth } from '@hooks/useAuth';
 
 interface ItemDetailsSidebarProps {
   item: Item;
 }
 
 const ItemDetailsSidebar = ({ item }: ItemDetailsSidebarProps) => {
+  const { isAdmin, isStaff } = useAuth();
+
   return (
     <Card>
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -32,13 +35,15 @@ const ItemDetailsSidebar = ({ item }: ItemDetailsSidebarProps) => {
           </div>
         </div>
 
-        <div className="flex items-start gap-3">
-          <User className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-gray-700">Registered By</p>
-            <p className="text-sm text-gray-600">{item.registeredBy?.name || 'Unknown'}</p>
+        {item.registeredBy && (
+          <div className="flex items-start gap-3">
+            <User className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-gray-700">Registered By</p>
+              <p className="text-sm text-gray-600">{item.registeredBy.name}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {item.finderName && (
           <div className="flex items-start gap-3">
@@ -59,8 +64,15 @@ const ItemDetailsSidebar = ({ item }: ItemDetailsSidebarProps) => {
             <div>
               <p className="text-sm font-medium text-gray-700">Storage Location</p>
               <p className="text-sm text-gray-600">
-                {typeof item.storageLocation === 'object' ? item.storageLocation.name : item.storageLocation}
+                {typeof item.storageLocation === 'object' 
+                  ? `${item.storageLocation.name}${item.storageLocation.city ? `, ${item.storageLocation.city}` : ''}`
+                  : item.storageLocation}
               </p>
+              {(isAdmin() || isStaff()) && typeof item.storageLocation === 'object' && item.storageLocation.location && (
+                <p className="text-xs text-blue-500 font-bold mt-1 uppercase tracking-tighter">
+                  Internal: {item.storageLocation.location}
+                </p>
+              )}
             </div>
           </div>
         )}

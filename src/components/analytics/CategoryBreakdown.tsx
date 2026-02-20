@@ -1,26 +1,15 @@
 import { Card } from '@components/ui';
 import type { AnalyticsMetrics } from '../../types/analytics.types';
+import { ANALYTICS_CATEGORY_COLORS } from '../../constants/categories';
 
 interface MetricProps {
     metrics: AnalyticsMetrics
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  ELECTRONICS: 'bg-blue-500',
-  DOCUMENTS: 'bg-indigo-500',
-  CLOTHING: 'bg-purple-500',
-  ACCESSORIES: 'bg-pink-500',
-  BAGS: 'bg-orange-500',
-  KEYS: 'bg-amber-500',
-  JEWELRY: 'bg-yellow-500',
-  BOOKS: 'bg-emerald-500',
-  SPORTS_EQUIPMENT: 'bg-cyan-500',
-  OTHER: 'bg-slate-500',
-};
-
 const CategoryBreakdown = ({ metrics }: MetricProps) => {
-  const sortedCategories = Object.entries(metrics.categoryBreakdown)
-    .sort(([, a], [, b]) => b - a);
+  const breakdown = metrics?.categoryBreakdown || {};
+  const sortedCategories = Object.entries(breakdown)
+    .sort(([, a], [, b]) => (b as number) - (a as number));
 
   return (
     <Card className="p-6">
@@ -38,7 +27,7 @@ const CategoryBreakdown = ({ metrics }: MetricProps) => {
             <div key={category} className="group">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category] || 'bg-gray-400'}`} />
+                  <div className={`w-2 h-2 rounded-full ${ANALYTICS_CATEGORY_COLORS[category] || 'bg-gray-400'}`} />
                   <span className="text-sm font-semibold text-gray-700 capitalize">
                     {category.toLowerCase().replace('_', ' ')}
                   </span>
@@ -52,7 +41,7 @@ const CategoryBreakdown = ({ metrics }: MetricProps) => {
               </div>
               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-1000 ease-out ${CATEGORY_COLORS[category] || 'bg-gray-400'}`}
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${ANALYTICS_CATEGORY_COLORS[category] || 'bg-gray-400'}`}
                   style={{ width: `${percentage}%` }}
                 />
               </div>

@@ -4,6 +4,7 @@ import { Card, Button } from '@components/ui';
 import { ClaimStatus } from '../../constants/status';
 import { formatDate } from '@utils/formatters';
 import type { Claim, User as UserType } from '../../types';
+import { useAuth } from '@hooks/useAuth';
 
 interface ClaimSidebarProps {
   claim: Claim;
@@ -11,6 +12,7 @@ interface ClaimSidebarProps {
 }
 
 const ClaimSidebar = ({ claim, showAdminActions = false }: ClaimSidebarProps) => {
+  const { isAdmin, isStaff } = useAuth();
   const claimantName = (claim.claimantId as UserType).name;
   const claimantEmail = (claim.claimantId as UserType).email;
   const claimantPhone = (claim.claimantId as UserType).phone;
@@ -87,11 +89,18 @@ const ClaimSidebar = ({ claim, showAdminActions = false }: ClaimSidebarProps) =>
               <div>
                 <p className="text-sm font-medium text-gray-700">Location</p>
                 <p className="text-sm text-gray-900">
-                  {claim.itemId?.storageLocation?.name || 'Main Storage'}
+                  {typeof claim.itemId?.storageLocation === 'object' 
+                    ? claim.itemId.storageLocation.name 
+                    : (claim.itemId?.storageLocation || 'Main Storage')}
+                  {typeof claim.itemId?.storageLocation === 'object' && claim.itemId.storageLocation.city && (
+                    <span className="text-gray-500 font-normal">, {claim.itemId.storageLocation.city}</span>
+                  )}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {claim.itemId?.storageLocation?.location || 'Central Office'}
-                </p>
+                {(isAdmin() || isStaff()) && typeof claim.itemId?.storageLocation === 'object' && claim.itemId.storageLocation.location && (
+                  <p className="text-xs text-blue-500 font-bold mt-1 uppercase tracking-tighter">
+                    Internal: {claim.itemId.storageLocation.location}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-start gap-3">

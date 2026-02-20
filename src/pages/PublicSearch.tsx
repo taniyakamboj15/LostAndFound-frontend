@@ -1,26 +1,31 @@
-import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Package } from 'lucide-react';
-import { Card, Input, Button, Spinner } from '@components/ui';
-import { ITEM_CATEGORIES } from '@constants/categories';
-import { usePublicSearch } from '@hooks/usePublicSearch';
-import { ComponentErrorBoundary } from '@components/feedback';
-import { ItemStatus } from '@constants/status';
-import ItemCard from '@components/items/ItemCard';
-import { ROUTES } from '@constants/routes';
 import { Link } from 'react-router-dom';
+import { Card, Input, Button, Spinner, Pagination } from '../components/ui';
+import { ITEM_CATEGORIES } from '../constants/categories';
+import { ComponentErrorBoundary } from '../components/feedback';
+import { ItemStatus } from '../constants/status';
+import ItemCard from '../components/items/ItemCard';
+import { ROUTES } from '../constants/routes';
+import { Item } from '../types';
+
+// Hooks
+import { usePublicSearchPage } from '../hooks/usePublicSearchPage';
 
 const PublicSearch = () => {
-  const { items, isLoading, error, filters, updateFilters, clearFilters, search } = usePublicSearch();
-  const [showFilters, setShowFilters] = useState(false);
-
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    updateFilters({ ...filters, [key]: value });
-  }, [filters, updateFilters]);
-
-  const handleSearch = useCallback(() => {
-    search(filters);
-  }, [filters, search]);
+  const {
+    items,
+    isLoading,
+    error,
+    filters,
+    clearFilters,
+    showFilters,
+    toggleFilters,
+    handleFilterChange,
+    handleSearch,
+    pagination,
+    setPage
+  } = usePublicSearchPage();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -81,7 +86,7 @@ const PublicSearch = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
+                  onClick={toggleFilters}
                   size="lg"
                   className="h-14"
                 >
@@ -182,23 +187,36 @@ const PublicSearch = () => {
             <Spinner size="lg" />
           </div>
         ) : items.length > 0 ? (
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {items.map((item) => (
-              <motion.div key={item._id} variants={itemVariants}>
-                <ItemCard 
-                  item={{
-                    ...item,
-                    status: ItemStatus.AVAILABLE, // Public items are expected to be available
-                  } as any} 
+          <div className="space-y-10">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              {items.map((item) => (
+                <motion.div key={item._id} variants={itemVariants}>
+                  <ItemCard 
+                    item={{
+                      ...item,
+                      status: ItemStatus.AVAILABLE,
+                    } as unknown as Item} 
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Pagination Component */}
+            {pagination.totalPages > 1 && (
+              <div className="flex justify-center pt-4">
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  onPageChange={setPage}
                 />
-              </motion.div>
-            ))}
-          </motion.div>
+              </div>
+            )}
+          </div>
         ) : (
           /* Empty State */
           <motion.div 

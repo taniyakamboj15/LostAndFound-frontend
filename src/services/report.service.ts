@@ -86,4 +86,24 @@ export const reportService = {
     );
     return response.data;
   },
+
+  /**
+   * Delete a lost report
+   * @param id Report ID
+   * @returns Success response
+   */
+  deleteReport: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete<{ success: boolean; message: string }>(API_ENDPOINTS.LOST_REPORTS.BY_ID(id));
+    return response.data;
+  },
+
+  /**
+   * Toggle star on a report
+   * @param id Report ID
+   * @returns Updated report response
+   */
+  toggleStar: async (id: string): Promise<LostReportResponse> => {
+    const response = await api.post<LostReportResponse>(`${API_ENDPOINTS.LOST_REPORTS.BY_ID(id)}/star`);
+    return response.data;
+  },
 };

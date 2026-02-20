@@ -39,14 +39,14 @@ const PaymentRevenue = ({ pa }: PaymentRevenueProps) => (
       />
       <StatCard
         label="Avg Fee per Claim"
-        value={`₹${pa.averageFee.toFixed(0)}`}
+        value={`₹${(pa?.averageFee || 0).toFixed(0)}`}
         icon={TrendingUp}
         color="text-purple-600"
       />
     </div>
 
     {/* Monthly revenue */}
-    {pa.revenueByMonth.length > 0 && (
+    {(pa?.revenueByMonth?.length || 0) > 0 && (
       <Card className="p-6">
         <div className="mb-8">
           <h3 className="text-lg font-bold text-gray-900">Revenue Trends</h3>
@@ -55,7 +55,7 @@ const PaymentRevenue = ({ pa }: PaymentRevenueProps) => (
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={pa.revenueByMonth}
+              data={pa?.revenueByMonth || []}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
               <defs>
@@ -112,7 +112,7 @@ const PaymentRevenue = ({ pa }: PaymentRevenueProps) => (
       {/* Recent payments */}
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Payments</h3>
-        {pa.recentPayments.length === 0 ? (
+        {(!pa?.recentPayments || pa.recentPayments.length === 0) ? (
           <p className="text-gray-500 text-sm">No payments yet.</p>
         ) : (
           <div className="space-y-3">
@@ -139,7 +139,7 @@ const PaymentRevenue = ({ pa }: PaymentRevenueProps) => (
       {/* Top payers */}
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Claimants by Payment</h3>
-        {pa.topPayingUsers.length === 0 ? (
+        {(!pa?.topPayingUsers || pa.topPayingUsers.length === 0) ? (
           <p className="text-gray-500 text-sm">No data yet.</p>
         ) : (
           <div className="space-y-3">

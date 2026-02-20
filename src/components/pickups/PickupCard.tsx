@@ -77,7 +77,11 @@ const PickupCard = ({ pickup }: PickupCardProps) => {
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Location</span>
                       <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
                          <MapPin className="h-4 w-4 text-red-500" />
-                         <span className="truncate">Main Office</span>
+                         <span className="truncate">
+                           {typeof pickup.claimId?.preferredPickupLocation === 'object'
+                             ? pickup.claimId.preferredPickupLocation.name
+                             : 'Assigned Branch'}
+                         </span>
                       </div>
                    </div>
                 </div>

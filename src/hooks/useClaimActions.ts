@@ -21,6 +21,18 @@ export const useClaimActions = (claimId: string | null) => {
     }
   }, [claimId, updateStatus, refresh]);
 
+  const handleRequestProof = useCallback(async () => {
+    if (!claimId) return;
+    setIsSubmitting(true);
+    try {
+      await updateStatus(ClaimStatus.IDENTITY_PROOF_REQUESTED);
+      await refresh();
+    } catch (error) {
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [claimId, updateStatus, refresh]);
+
   const handleReject = useCallback(async () => {
     if (!claimId || !rejectionReason.trim()) return;
 
@@ -46,6 +58,17 @@ export const useClaimActions = (claimId: string | null) => {
     setRejectionReason('');
   }, []);
 
+  const handleDelete = useCallback(async () => {
+    if (!claimId) return;
+    setIsSubmitting(true);
+    try {
+      const { claimService } = await import('../services/claim.service');
+      await claimService.deleteClaim(claimId);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [claimId]);
+
   return {
     claim,
     isLoading,
@@ -56,6 +79,8 @@ export const useClaimActions = (claimId: string | null) => {
     setRejectionReason,
     handleVerify,
     handleReject,
+    handleRequestProof,
+    handleDelete,
     openRejectModal,
     closeRejectModal,
     refresh

@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import BackButton from '@components/ui/BackButton';
 import { 
@@ -7,49 +7,59 @@ import {
   Upload,
   Clock,
   ShieldCheck,
-  AlertTriangle,
+  Truck,
+  Trash2
 } from 'lucide-react';
-import { Card, Badge, Button, Modal, Textarea, Spinner } from '@components/ui';
-import { ClaimStatus, CLAIM_STATUS_LABELS } from '@constants/status';
-import FeeBreakdown from '@components/payment/FeeBreakdown';
+import { Button, Modal, Textarea, Spinner } from '@components/ui';
+import { ClaimStatus } from '@constants/status';
 import PaymentModal from '@components/payment/PaymentModal';
-
-import { formatRelativeTime } from '@utils/formatters';
-import { useAuth } from '@hooks/useAuth';
-import { useClaimActions } from '@hooks/useClaimActions';
-import { useClaimPayment } from '@hooks/useClaimPayment';
 import { ComponentErrorBoundary } from '@components/feedback';
-import PickupScheduler from '@components/claims/PickupScheduler';
-import { User } from '../types';
+
+// Hooks
+import { useClaimDetailPage } from '@hooks/useClaimDetailPage';
 
 // Components
 import ClaimPhotos from '@components/claims/ClaimPhotos';
 import ClaimTimeline from '@components/claims/ClaimTimeline';
 import ClaimSidebar from '@components/claims/ClaimSidebar';
 
+// Sub-components
+import ClaimDetailHero from '@components/claims/detail/ClaimDetailHero';
+import ClaimPrivacyBanner from '@components/claims/detail/ClaimPrivacyBanner';
+import ClaimTransferTracking from '@components/claims/detail/ClaimTransferTracking';
+import ClaimAttributeComparison from '@components/claims/detail/ClaimAttributeComparison';
+import ClaimantStatement from '@components/claims/detail/ClaimantStatement';
+import ClaimVerificationActions from '@components/claims/detail/ClaimVerificationActions';
+import ClaimChallengeVerification from '@components/claims/detail/ClaimChallengeVerification';
+import ClaimAnswerChallenge from '@components/claims/detail/ClaimAnswerChallenge';
+import ClaimTransferManagement from '@components/claims/detail/ClaimTransferManagement';
+
 const ClaimDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { user, isAdmin, isStaff } = useAuth();
-  
-  const { 
-    claim, 
-    isLoading: loading, 
-    handleVerify, 
-    handleReject, 
+  const {
+    navigate,
+    isAdmin,
+    isStaff,
+    claim,
+    loading,
+    handleVerify,
+    handleReject,
     isSubmitting,
     isRejectModalOpen,
-    openRejectModal,
     closeRejectModal,
     rejectionReason,
     setRejectionReason,
-    refresh
-  } = useClaimActions(id || null);
-
-  const claimantId = claim ? (typeof claim.claimantId === 'object' ? (claim.claimantId as User)._id : claim.claimantId) : null;
-  const isClaimant = !!(user && claimantId && (user._id === claimantId || user.id === claimantId));
-
-  const {
+    challengeQuestion,
+    setChallengeQuestion,
+    challengeAnswers,
+    setChallengeAnswers,
+    challengeLoadingId,
+    isChallengeOpen,
+    setIsChallengeOpen,
+    activeTab,
+    setActiveTab,
+    handleSubmitChallengeQuestion,
+    handleSubmitChallengeAnswer,
+    isClaimant,
     feeBreakdown,
     isPaymentModalOpen,
     setIsPaymentModalOpen,
@@ -57,16 +67,15 @@ const ClaimDetail = () => {
     loadingFee,
     isPayLoading,
     handlePayClick,
-    handlePaymentSuccess
-  } = useClaimPayment(claim, isClaimant, refresh);
+    handlePaymentSuccess,
+    transfer,
+    toStorage,
+    fromStorage,
+    openRejectModal,
+    handleRequestProof,
+    handleDelete
+  } = useClaimDetailPage();
 
-  const getStatusBadgeVariant = (status: ClaimStatus) => {
-    if (status === ClaimStatus.VERIFIED) return 'success';
-    if (status === ClaimStatus.REJECTED) return 'danger';
-    if (status === ClaimStatus.IDENTITY_PROOF_REQUESTED) return 'warning';
-    if (status === ClaimStatus.PICKUP_BOOKED || status === ClaimStatus.RETURNED) return 'info';
-    return 'default';
-  };
 
   if (loading || !claim) {
     return (
@@ -89,7 +98,7 @@ const ClaimDetail = () => {
            
            <div className="flex items-center gap-3">
               {/* Actions (Staff/Admin only) */}
-              {(isAdmin() || isStaff()) && claim.status === ClaimStatus.IDENTITY_PROOF_REQUESTED && (
+              {(isAdmin || isStaff) && (claim.status === ClaimStatus.IDENTITY_PROOF_REQUESTED || claim.status === ClaimStatus.FILED) && (
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
@@ -100,6 +109,17 @@ const ClaimDetail = () => {
                     <XCircle className="h-5 w-5 mr-2 text-red-500" />
                     Reject
                   </Button>
+                  {claim.status === ClaimStatus.FILED && (
+                    <Button
+                      variant="outline"
+                      onClick={handleRequestProof}
+                      disabled={isSubmitting}
+                      className="h-11 rounded-xl"
+                    >
+                      <Upload className="h-5 w-5 mr-2 text-yellow-500" />
+                      Request Proof
+                    </Button>
+                  )}
                   <Button
                     variant="primary"
                     onClick={handleVerify}
@@ -113,60 +133,88 @@ const ClaimDetail = () => {
               )}
 
               {/* Actions (Claimant only) */}
-              {isClaimant && claim.status === ClaimStatus.IDENTITY_PROOF_REQUESTED && (
-                <Link to={`/claims/${claim._id}/proof`}>
-                  <Button variant="primary" className="h-11 rounded-xl shadow-lg shadow-blue-100">
-                    <Upload className="h-5 w-5 mr-2" />
-                    Upload More Proof
+              {isClaimant && (claim.status === ClaimStatus.IDENTITY_PROOF_REQUESTED || claim.status === ClaimStatus.FILED) && (
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-11 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 border-red-100"
+                    onClick={async () => {
+                      if (window.confirm('Are you sure you want to delete this claim? This action cannot be undone.')) {
+                        await handleDelete();
+                        navigate('/claims');
+                      }
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    <Trash2 className="h-5 w-5 mr-2" />
+                    Delete Claim
                   </Button>
-                </Link>
+                  <Link to={`/claims/${claim._id}/proof`}>
+                    <Button variant="primary" className="h-11 rounded-xl shadow-lg shadow-blue-100">
+                      <Upload className="h-5 w-5 mr-2" />
+                      Upload More Proof
+                    </Button>
+                  </Link>
+                </div>
               )}
            </div>
         </div>
 
         {/* Hero Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-             <ShieldCheck className="h-32 w-32" />
+        <ClaimDetailHero 
+          claim={claim} 
+          isAdmin={isAdmin} 
+          isStaff={isStaff} 
+          isClaimant={isClaimant} 
+        />
+
+        {/* Privacy Redaction Banner for Claimants */}
+        <ClaimPrivacyBanner 
+          status={claim.status} 
+          isAdmin={isAdmin} 
+          isStaff={isStaff} 
+        />
+
+        {/* Multi-Tab Navigation for Staff/Admin */}
+        {(isAdmin || isStaff) && transfer && (
+          <div className="flex bg-gray-50 p-1 rounded-xl w-fit">
+            <button
+              onClick={() => setActiveTab('DETAILS')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                activeTab === 'DETAILS'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Claim Details
+            </button>
+            <button
+              onClick={() => setActiveTab('TRANSFER')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'TRANSFER'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Truck className="h-4 w-4" />
+              Manage Transfer
+            </button>
           </div>
-          
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Badge variant={getStatusBadgeVariant(claim.status)} className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
-                  {CLAIM_STATUS_LABELS[claim.status as ClaimStatus]}
-                </Badge>
-                {isClaimant && (
-                   <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold uppercase tracking-tighter border border-blue-100">
-                     <ShieldCheck className="h-3 w-3" />
-                     Your Claim
-                   </span>
-                )}
-              </div>
-              <div>
-                <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                  {claim.itemId.description}
-                </h1>
-                <div className="flex items-center gap-4 mt-3 text-gray-400 font-medium">
-                   <div className="flex items-center gap-1.5">
-                      <Clock className="h-4 w-4" />
-                      <span>Filed {formatRelativeTime(claim.filedAt || claim.createdAt)}</span>
-                   </div>
-                   <div className="h-1 w-1 rounded-full bg-gray-300" />
-                   <span className="text-gray-900 font-bold">Ref: #{claim._id}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
+            {activeTab === 'DETAILS' ? (
+              <>
+            
+            {/* Transfer Tracking */}
+            <ClaimTransferTracking 
+              status={claim.status} 
+              transfer={transfer} 
+              toStorage={toStorage} 
+            />
+
             {/* Photos & Evidence */}
             <section className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
@@ -179,60 +227,65 @@ const ClaimDetail = () => {
               />
             </section>
 
+            {/* Matcher Comparison (Staff/Admin only) */}
+            {(isAdmin || isStaff) && (
+              <ClaimAttributeComparison claim={claim} />
+            )}
+
             {/* Description Card */}
-            <Card className="p-0 border-none shadow-sm overflow-hidden bg-white">
-              <div className="p-6 bg-gray-50/50 border-b border-gray-100">
-                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                   <AlertTriangle className="h-5 w-5 text-amber-500" />
-                   Claimant Statement
-                 </h3>
-              </div>
-              <div className="p-6">
-                 <p className="text-gray-700 leading-relaxed italic">
-                   "{claim.description || 'No statement provided.'}"
-                 </p>
-              </div>
-            </Card>
+            <ClaimantStatement description={claim.description} />
 
             {/* Pickup/Payment Integration */}
-            {claim.status === ClaimStatus.VERIFIED && isClaimant && (
-               <motion.div 
-                 initial={{ scale: 0.95, opacity: 0 }}
-                 animate={{ scale: 1, opacity: 1 }}
-               >
-                  {claim.paymentStatus === 'PAID' ? (
-                     <PickupScheduler claimId={claim._id || ''} onScheduled={() => navigate('/pickups')} />
-                  ) : (
-                     <Card className="border-2 border-blue-100 bg-blue-50/30 p-8 text-center sm:text-left">
-                        <div className="flex flex-col sm:flex-row items-center gap-6">
-                           <div className="h-16 w-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-200">
-                             <ShieldCheck className="h-8 w-8" />
-                           </div>
-                           <div className="flex-1">
-                              <h2 className="text-2xl font-bold text-gray-900 mb-2">Claim Verified!</h2>
-                              <p className="text-blue-800 font-medium leading-relaxed">
-                                Your claim has been approved. Please complete the recovery fee payment to schedule your item pickup.
-                              </p>
-                           </div>
-                        </div>
-                        
-                        <div className="mt-8 bg-white rounded-2xl p-6 shadow-sm border border-blue-100">
-                           <FeeBreakdown breakdown={feeBreakdown} isLoading={loadingFee} />
-                           <div className="mt-6 flex justify-end">
-                              <Button 
-                                onClick={handlePayClick} 
-                                disabled={!feeBreakdown || isPayLoading} 
-                                isLoading={isPayLoading}
-                                className="px-10 h-12 rounded-xl shadow-lg shadow-blue-200"
-                              >
-                                 Proceed to Secure Payment
-                              </Button>
-                           </div>
-                        </div>
-                     </Card>
-                  )}
-               </motion.div>
+            <ClaimVerificationActions 
+              claim={claim}
+              isClaimant={isClaimant}
+              feeBreakdown={feeBreakdown}
+              loadingFee={loadingFee}
+              isPayLoading={isPayLoading}
+              handlePayClick={handlePayClick}
+              navigate={navigate}
+            />
+
+            {/* In-Transit Message for Paid Claims */}
+            {isClaimant && 
+             claim.paymentStatus === 'PAID' && 
+             (claim.status === ClaimStatus.AWAITING_TRANSFER || claim.status === ClaimStatus.IN_TRANSIT) && (
+              <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 flex items-start gap-4">
+                  <div className="p-2 bg-blue-100 rounded-xl">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900">Payment Confirmed</h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Your recovery fee has been received. We are currently transporting your item to the pickup point. 
+                      <strong> You will be able to book your pickup slot as soon as the item arrives.</strong>
+                    </p>
+                  </div>
+              </div>
             )}
+
+            {/* Challenge-Response Verification (Staff/Admin only) */}
+            <ClaimChallengeVerification 
+              claim={claim}
+              isAdmin={isAdmin}
+              isStaff={isStaff}
+              isChallengeOpen={isChallengeOpen}
+              setIsChallengeOpen={setIsChallengeOpen}
+              challengeQuestion={challengeQuestion}
+              setChallengeQuestion={setChallengeQuestion}
+              handleSubmitChallengeQuestion={handleSubmitChallengeQuestion}
+              challengeLoadingId={challengeLoadingId}
+            />
+
+            {/* Challenge-Response Action (Claimant only) */}
+            <ClaimAnswerChallenge 
+              claim={claim}
+              isClaimant={isClaimant}
+              challengeAnswers={challengeAnswers}
+              setChallengeAnswers={setChallengeAnswers}
+              handleSubmitChallengeAnswer={handleSubmitChallengeAnswer}
+              challengeLoadingId={challengeLoadingId}
+            />
 
             {/* Timeline */}
             <section className="space-y-4">
@@ -242,14 +295,24 @@ const ClaimDetail = () => {
               </div>
               <ClaimTimeline timeline={claim.timeline} />
             </section>
+            
+            </>
+            ) : (
+              <ClaimTransferManagement 
+                activeTab={activeTab} 
+                transfer={transfer} 
+                fromStorage={fromStorage} 
+                toStorage={toStorage} 
+              />
+            )}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-8">
-            <ClaimSidebar claim={claim} showAdminActions={isAdmin() || isStaff()} />
-            
+            <ClaimSidebar claim={claim} showAdminActions={isAdmin || isStaff} />
+
             {/* Help/Support Box */}
-            <Card className="bg-gray-900 text-white p-6 border-none rounded-3xl relative overflow-hidden">
+            <div className="bg-gray-900 text-white p-6 rounded-3xl relative overflow-hidden">
                <div className="absolute top-0 right-0 p-4 opacity-10">
                   <ShieldCheck className="h-20 w-20" />
                </div>
@@ -260,7 +323,7 @@ const ClaimDetail = () => {
                <Button variant="ghost" className="text-blue-400 hover:text-blue-300 p-0 h-auto text-xs font-bold">
                  Learn about our process →
                </Button>
-            </Card>
+            </div>
           </div>
         </div>
 

@@ -10,7 +10,7 @@ import ClaimCard from '@components/claims/ClaimCard';
 import { ClaimFilterState } from '../types/claim.types';
 
 const ClaimsList = () => {
-  const { claims, isLoading, error, filters, updateFilters, refresh, pagination, handlePageChange } = useClaimsList();
+  const { claims, isLoading, error, filters, updateFilters, refresh, pagination, handlePageChange, deleteClaim } = useClaimsList();
   const [showFilters, setShowFilters] = useState(false);
 
   const handleFilterChange = useCallback((key: keyof ClaimFilterState, value: string | number) => {
@@ -157,7 +157,7 @@ const ClaimsList = () => {
             >
               {claims.map((claim) => (
                 <motion.div key={claim._id} variants={itemVariants}>
-                  <ClaimCard claim={claim} />
+                  <ClaimCard claim={claim} onDelete={deleteClaim} />
                 </motion.div>
               ))}
             </motion.div>

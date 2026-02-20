@@ -190,7 +190,11 @@ const ItemDetail = () => {
                 variant="primary"
                 onClick={() => {
                   setIsClaimModalOpen(false);
-                  navigate(`/claims/create?itemId=${item._id}`);
+                  if (user) {
+                    navigate(`/claims/create?itemId=${item._id}`);
+                  } else {
+                    navigate(`/claims/anonymous?itemId=${item._id}`);
+                  }
                 }}
                 className="flex-1 shadow-md shadow-blue-200"
               >

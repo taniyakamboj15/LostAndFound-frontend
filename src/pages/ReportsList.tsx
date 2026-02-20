@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, FileText, Calendar, MapPin, Plus, AlertCircle } from 'lucide-react';
+import { Search, Filter, FileText, Calendar, MapPin, Plus, AlertCircle, Star, Trash2 } from 'lucide-react';
 import { Card, Input, Button, Badge, Select, Spinner, Pagination } from '@components/ui';
 import { ItemCategory, ITEM_CATEGORIES } from '@constants/categories';
 import { formatDate, formatRelativeTime } from '@utils/formatters';
@@ -10,8 +10,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { ReportFilterState } from '../types/report.types';
 
+import { useAuth } from '@hooks/useAuth';
+
 const ReportsList = () => {
-  const { reports, isLoading, error, filters, updateFilters, refresh, pagination, handlePageChange } = useReportsList();
+  const { user } = useAuth();
+  const { reports, isLoading, error, filters, updateFilters, refresh, pagination, handlePageChange, toggleStar, deleteReport } = useReportsList();
   const [showFilters, setShowFilters] = useState(false);
 
   const handleFilterChange = useCallback((key: keyof ReportFilterState, value: string | number) => {
@@ -180,11 +183,37 @@ const ReportsList = () => {
                             <Badge variant="info" className="shadow-sm">
                               {ITEM_CATEGORIES[report.category as keyof typeof ITEM_CATEGORIES]?.label || report.category}
                             </Badge>
-                            {(report.matchCount || 0) > 0 && (
-                              <Badge variant="success" className="animate-bounce">
-                                {report.matchCount} Matches Found
-                              </Badge>
-                            )}
+                            <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    toggleStar(report._id);
+                                  }}
+                                  className={`p-1.5 rounded-xl transition-all ${
+                                    report.starredBy?.includes(user?.id || '')
+                                      ? 'bg-amber-100 text-amber-600'
+                                      : 'bg-gray-50 text-gray-400 hover:text-amber-500 hover:bg-amber-50'
+                                  }`}
+                                >
+                                  <Star className={`h-4 w-4 ${report.starredBy?.includes(user?.id || '') ? 'fill-current' : ''}`} />
+                                </button>
+                                
+                                {(user?.role === 'ADMIN' || user?.role === 'STAFF' || 
+                                  (typeof report.reportedBy === 'string' ? report.reportedBy === user?.id : report.reportedBy?._id === user?.id)) && (
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (window.confirm('Delete this report?')) deleteReport(report._id);
+                                  }}
+                                  className="p-1.5 bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                  title="Delete Report"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           <h3 className="text-lg font-bold text-gray-900 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">

@@ -12,12 +12,22 @@ import { ComponentErrorBoundary } from '@components/feedback';
 import { cn } from '@utils/helpers';
 import { usePhotoUpload } from '@hooks/usePhotoUpload';
 import { CreateItemFormData } from '@/types/createItem.types';
+import { useAuth } from '@hooks/useAuth';
+
+const ITEM_COLORS = ['Black', 'White', 'Silver', 'Gold', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Gray', 'Multicolor'];
+const ITEM_SIZES = [
+  { value: 'SMALL', label: 'Small (fits in a hand)' },
+  { value: 'MEDIUM', label: 'Medium (briefcase-sized)' },
+  { value: 'LARGE', label: 'Large (suitcase-sized)' },
+];
 
 const CreateItem = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { createItem, isSubmitting } = useCreateItem();
   const { locations } = useStorage();
+  const { isAdmin, isStaff } = useAuth();
+  const isPrivileged = isAdmin() || isStaff();
   const {
     register,
     handleSubmit,
@@ -28,6 +38,8 @@ const CreateItem = () => {
   });
 
   const isHighValue = watch('isHighValue');
+  const selectedCategory = watch('category');
+  const selectedSize = watch('itemSize') || 'MEDIUM';
   const { photos, photoPreviews, handlePhotoChange, removePhoto } = usePhotoUpload();
 
   const onSubmit = async (data: CreateItemFormData) => {
@@ -126,6 +138,58 @@ const CreateItem = () => {
                 rows={2}
                 {...register('identifyingFeatures')}
               />
+            </div>
+          </Card>
+
+          {/* Structured Markers */}
+          <Card>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Structured Markers</h2>
+            <p className="text-sm text-gray-500 mb-4">These fields feed the matching engine with precise, weighted data.</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input
+                  label="Brand"
+                  placeholder="e.g., Apple, Samsung, Nike"
+                  fullWidth
+                  {...register('brand')}
+                />
+                <Select
+                  label="Color"
+                  options={[
+                    { value: '', label: 'Select color' },
+                    ...ITEM_COLORS.map(c => ({ value: c.toUpperCase(), label: c }))
+                  ]}
+                  fullWidth
+                  {...register('color')}
+                />
+                <Select
+                  label="Size"
+                  options={[{ value: '', label: 'Select size' }, ...ITEM_SIZES]}
+                  fullWidth
+                  {...register('itemSize')}
+                />
+              </div>
+              {selectedCategory === 'BAGS' && (
+                <Textarea
+                  label="Bag Contents"
+                  placeholder="e.g., Laptop, charger, wallet (comma-separated)"
+                  helperText="What was inside the bag when found? This helps claimants prove ownership."
+                  fullWidth
+                  rows={2}
+                  {...register('bagContents')}
+                />
+              )}
+              {isPrivileged && (
+                <Textarea
+                  label="Secret Identifiers (Staff/Admin only)"
+                  placeholder="One per line — e.g. serial number, engraving text, hidden marking"
+                  helperText="PRIVATE: Not shown to public. Used for challenge-response verification."
+                  fullWidth
+                  rows={3}
+                  className="border-amber-200 bg-amber-50/30"
+                  {...register('secretIdentifiers')}
+                />
+              )}
             </div>
           </Card>
 
@@ -233,13 +297,22 @@ const CreateItem = () => {
                 label="Storage Location"
                 options={[
                   { value: '', label: 'Select a storage location' },
-                  ...locations.map((loc) => ({
-                    value: loc._id,
-                    label: `${loc.name} (${loc.location}) [${loc.currentCount}/${loc.capacity}]`,
-                    disabled: loc.currentCount >= loc.capacity,
-                  })),
+                  ...locations
+                    .filter(loc => (loc.capacity[selectedSize.toLowerCase() as 'small' | 'medium' | 'large'] || 0) > 0)
+                    .map((loc) => {
+                      const sizeKey = selectedSize.toLowerCase() as 'small' | 'medium' | 'large';
+                      const currentCount = loc.currentCount[sizeKey] || 0;
+                      const capacity = loc.capacity[sizeKey] || 0;
+                      const isFull = currentCount >= capacity;
+                      
+                      return {
+                        value: loc._id,
+                        label: `${loc.name} (${loc.city || 'Unknown City'}) - [${loc.location}] | ${selectedSize}: ${currentCount}/${capacity}`,
+                        disabled: isFull,
+                      };
+                    }),
                 ]}
-                helperText="Where the item is currently stored"
+                helperText={locations.length === 0 ? "No storage locations found" : "Only showing branches with available capacity for " + selectedSize}
                 error={errors.storageLocation?.message}
                 fullWidth
                 {...register('storageLocation')}

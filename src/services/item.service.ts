@@ -148,4 +148,14 @@ export const itemService = {
     );
     return response.data;
   },
+
+  /**
+   * Delete an item (soft delete)
+   * @param id Item ID
+   * @returns Success response
+   */
+  deleteItem: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete<{ success: boolean; message: string }>(API_ENDPOINTS.ITEMS.BY_ID(id));
+    return response.data;
+  },
 };

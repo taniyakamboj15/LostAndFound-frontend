@@ -24,6 +24,13 @@ This repository contains the **Frontend** application, built with React, TypeScr
 
 ## ✨ Features
 
+- **Privacy-Preserving Search**: found items are listed with **redacted sensitive details** (e.g., brand, serial numbers hidden). Claimants must provide these details to prove ownership during the claim filing process.
+- **Bulk Intake Workflow**: optimized interface for staff to register multiple items with sequential photography, auto-crop support, and smart field inheritance.
+- **Interactive Storage Visualization**: real-time occupancy tracking with color-coded progress bars and automated capacity enforcement to prevent over-loading shelves.
+- **Multi-Leg Pickup Support**: UI logic to handle items in transit; booking slots only become available after the estimated arrival at the destination hub.
+- **AI Assistant Chat Widget**: interactive Google Gemini powered floating widget for natural language reporting and real-time status updates.
+- **Claim Verification Hub**: unified portal for staff to review proof documents, verify challenge-response identifiers, and manage handovers.
+- **Stripe Integrated Recovery**: transparent fee breakdown (Storage + Handling) with protected checkout flow.
 - **User Authentication**: Secure login/register for Admin, Staff, and Claimant roles.
 - **Public Search Portal**: Browse found items without login requirement; view full item details publicly.
 - **Found Item Registration**: Staff can log items with category, description, photos, and location/date found.
@@ -67,7 +74,36 @@ This repository contains the **Frontend** application, built with React, TypeScr
 
 ## 👤 User Workflows
 
-### Claimant Journey: Finding a Lost Item
+### 1. Multi-Leg Pickup & Internal Transfer Flow
+
+The platform handles item logistics transparently for the claimant.
+
+```mermaid
+graph TD
+    A[Claim Verified & Paid] --> B{Same Location?}
+    B -->|Yes| C[Schedule Direct Pickup]
+    B -->|No| D[Trigger Internal Transfer]
+    D --> E[Status: IN_TRANSIT]
+    E --> F[Item Arrives at User Hub]
+    F --> G[Push Notification Sent]
+    G --> H[Pickup Booking Unlocked]
+    C --> I[QR Code Generated]
+    H --> I
+```
+
+**Case 1: Same City/Location**
+- Common for localized venues (Universities, Malls).
+- The "Schedule Pickup" button activates immediately after payment.
+
+**Case 2: Different Location**
+- Common for transit networks (Airports, Railway chains).
+- **UX Workflow**:
+  1. Claimant sees "Item in Transit" status after payment.
+  2. UI displays estimated arrival date based on logistics speed.
+  3. Once the item is scanned at the destination property, the claimant receives a "Ready for Pickup" alert.
+  4. **Calendar Guard**: The scheduling calendar automatically blacks out dates before the item's arrival.
+
+### 2. Claimant Journey: Finding a Lost Item
 
 ```mermaid
 graph LR
@@ -233,6 +269,31 @@ src/components/
     npm run build
     ```
 
+---
+
+## 🆕 Friday Update (February 20, 2026) �
+
+This week focused on **Logistics Hardening**, **Strict Security**, and **Production UX**.
+
+### � Production Feature Shipments
+- ✅ **Anonymous Claim Linking**: Guest claimants can now link historical claims to new accounts during registration.
+- ✅ **Bulk Intake UI**: Optimized staff interface for 30+ items/min intake with auto-crop and sequential metadata inheritance.
+- ✅ **Multi-Leg Logistics UX**: Full frontend support for item transfers, including transit status tracking and arrival-gated pickup booking.
+- ✅ **Fraud Guard v2 Visualization**: Staff alerts for high-risk claims (Temporal anomalies, duplicated descriptions).
+- ✅ **MTX Matcher Dashboard**: Advanced matching interface with confidence score breakdowns and manual override controls.
+- ✅ **Challenge-Response UI**: Secure verification portal for staff to verify claimant knowledge of "Secret Identifiers".
+- ✅ **Interactive Storage Map**: Real-time occupancy visualization with automated capacity enforcement.
+- ✅ **Predictive Analytics Hub**: Dashboard widgets for recovery probability and "Time-to-Claim" forecasts.
+- ✅ **Multi-Channel Alerts**: Unified notification center for in-app, email, and SMS escalation status.
+- ✅ **Privacy Search Engine**: Redacted search results across the public portal, requiring attribute-based verification to uncover details.
+
+### 🛡️ Technical Excellence
+- ✅ **Type Safety Pass**: Finalized strict TypeScript enforcement across all 15+ backend and frontend modules.
+- ✅ **API Interceptor Hardening**: Improved error handling and automatic retry logic for transient network failures.
+- ✅ **Logistics ETA Engine**: Logic to calculate and display transfer-ready pickup availability.
+
+---
+
 ## 🆕 Recent Updates (February 2026)
 
 ### Today's Update (Thursday, February 19, 2026) 💳
@@ -257,7 +318,6 @@ src/components/
 #### AI & UI Improvements
 - ✅ **AI Chat Widget**: Implemented a floating chat assistant for real-time user help.
 - ✅ **Email Verification Gate**: Added modal gates to prevent actions until email is verified.
-- ✅ **Type Safety Refactor**: Massively reduced `any` usage in services and components.
 
 #### DX & Documentation
 - ✅ **JSDoc Serialization**: Added JSDoc comments to core API services.

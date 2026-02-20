@@ -10,7 +10,6 @@ export async function createItemAction({ request }: ActionFunctionArgs) {
       category: formData.get('category') as ItemCategory,
       description: formData.get('description') as string,
       locationFound: formData.get('locationFound') as string,
-      
       dateFound: formData.get('dateFound') as string,
       isHighValue: formData.get('isHighValue') === 'true',
       estimatedValue: formData.get('estimatedValue') ? Number(formData.get('estimatedValue')) : undefined,
